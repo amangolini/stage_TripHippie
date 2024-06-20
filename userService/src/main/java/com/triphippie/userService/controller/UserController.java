@@ -2,7 +2,7 @@ package com.triphippie.userService.controller;
 
 import com.triphippie.userService.model.UserInDto;
 import com.triphippie.userService.model.UserOutDto;
-import com.triphippie.userService.service.ServiceResult;
+import com.triphippie.userService.service.UserServiceResult;
 import com.triphippie.userService.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,7 +29,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> postUser(@RequestBody UserInDto user) {
-        ServiceResult result = userService.createUser(user);
+        UserServiceResult result = userService.createUser(user);
         return switch (result) {
             case SUCCESS -> new ResponseEntity<>(HttpStatus.CREATED);
             case BAD_REQUEST -> new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -59,7 +59,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     public ResponseEntity<?> putUser(@PathVariable("userId") Integer id, @RequestBody UserInDto user) {
-        ServiceResult result = userService.updateUser(id, user);
+        UserServiceResult result = userService.updateUser(id, user);
         return switch (result) {
             case SUCCESS -> new ResponseEntity<>(HttpStatus.NO_CONTENT);
             case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);

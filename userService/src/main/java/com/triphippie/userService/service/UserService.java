@@ -53,9 +53,9 @@ public class UserService {
         );
     }
 
-    public ServiceResult createUser(UserInDto userInDto) {
-        if(!validateUserInDto(userInDto)) return ServiceResult.BAD_REQUEST;
-        if(isUsernamePresent(userInDto.getUsername())) return ServiceResult.CONFLICT;
+    public UserServiceResult createUser(UserInDto userInDto) {
+        if(!validateUserInDto(userInDto)) return UserServiceResult.BAD_REQUEST;
+        if(isUsernamePresent(userInDto.getUsername())) return UserServiceResult.CONFLICT;
 
         User newUser = new User();
         newUser.setUsername(userInDto.getUsername());
@@ -69,7 +69,7 @@ public class UserService {
         newUser.setCity(userInDto.getCity());
 
         userRepository.save(newUser);
-        return ServiceResult.SUCCESS;
+        return UserServiceResult.SUCCESS;
     }
 
     public List<UserOutDto> findAllUsers(Integer size, Integer page) {
@@ -98,13 +98,13 @@ public class UserService {
     /*
     * MIGLIORARE EVENTUALMENTE GESTIONE PASSWORD
     * */
-    public ServiceResult updateUser(Integer id, UserInDto userInDto) {
+    public UserServiceResult updateUser(Integer id, UserInDto userInDto) {
         Optional<User> oldUser = userRepository.findById(id);
-        if(oldUser.isEmpty()) return ServiceResult.NOT_FOUND;
+        if(oldUser.isEmpty()) return UserServiceResult.NOT_FOUND;
 
         User user = oldUser.get();
         if(isUsernamePresent(userInDto.getUsername()) && !userInDto.getUsername().equals(user.getUsername()))
-            return ServiceResult.CONFLICT;
+            return UserServiceResult.CONFLICT;
 
         user.setUsername(userInDto.getUsername());
         if(userInDto.getPassword() != null) user.setPassword(userInDto.getPassword());
@@ -116,7 +116,7 @@ public class UserService {
         user.setCity(userInDto.getCity());
 
         userRepository.save(user);
-        return ServiceResult.SUCCESS;
+        return UserServiceResult.SUCCESS;
     }
 
     public void deleteUserById(Integer id) {

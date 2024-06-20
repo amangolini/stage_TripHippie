@@ -1,6 +1,6 @@
 package com.triphippie.userService.service;
 
-public enum ServiceResult {
+public enum UserServiceResult {
     SUCCESS,
     BAD_REQUEST,
     CONFLICT,

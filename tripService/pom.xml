@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.triphippie</groupId>
-	<artifactId>userService</artifactId>
+	<artifactId>tripService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>User Service</name>
-	<description>User Service for TripHippie platform</description>
+	<name>Trip Service</name>
+	<description>Trip Service for TripHippie platform</description>
 	<url/>
 	<licenses>
 		<license/>

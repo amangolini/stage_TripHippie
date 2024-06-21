@@ -14,20 +14,6 @@ public class Journey {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @Id
-//    @Column(name = "trip_id", nullable = false)
-//    private Long trip_id;
-//
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-//    @Column(name = "id", nullable = false)
-//    private Long id;
-//
-//    @MapsId("trip_id")
-//    @ManyToOne
-//    @JoinColumn(name="trip_id", referencedColumnName = "id", nullable = false)
-//    private Trip trip;
-
     @ManyToOne
     @JoinColumn(name="trip_id", nullable = false)
     private Trip trip;

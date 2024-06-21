@@ -49,8 +49,12 @@ public class TripService {
         return tripRepository.findById(tripId).isPresent();
     }
 
+    private boolean validateDates(LocalDate start, LocalDate end) {
+        return start.isBefore(end);
+    }
+
     public void createTrip(TripInDto tripInDto) throws TripServiceException {
-        if(tripInDto.getStartDate().isAfter(tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
+        if(!validateDates(tripInDto.getStartDate(), tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
         Trip trip = new Trip();
         trip.setUserId(tripInDto.getUserId());
         trip.setStartDate(tripInDto.getStartDate());
@@ -89,13 +93,20 @@ public class TripService {
         return trip.map(TripService::mapToTripOut);
     }
 
-//    public TripServiceResult modifyTrip(Long id, TripInDto tripInDto) {
-//        Optional<Trip> oldTrip = tripRepository.findById(id);
-//        if(oldTrip.isEmpty()) return TripServiceResult.NOT_FOUND;
-//
-//        Trip trip = oldTrip.get();
-//
-//    }
+    public void modifyTrip(Long id, TripInDto tripInDto) throws TripServiceException {
+        if(!validateDates(tripInDto.getStartDate(), tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
+        Optional<Trip> oldTrip = tripRepository.findById(id);
+        if(oldTrip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+
+        Trip trip = oldTrip.get();
+        trip.setUserId(tripInDto.getUserId());
+        trip.setStartDate(tripInDto.getStartDate());
+        trip.setEndDate(tripInDto.getEndDate());
+        trip.setPreferencies(tripInDto.getPreferencies());
+        trip.setDescription(tripInDto.getDescription());
+
+        tripRepository.save(trip);
+    }
 
     public void deleteTripById(Long id) { tripRepository.deleteById(id); }
 
@@ -123,9 +134,19 @@ public class TripService {
         return outJourneys;
     }
 
-    public JourneyOutDto findJourneyById(Long tripId, Long journeyId) throws TripServiceException {
-        Optional<Journey> journey = journeyRepository.findById(new JourneyKey(tripId, journeyId));
+    public JourneyOutDto findJourneyById(Long id) throws TripServiceException {
+        Optional<Journey> journey = journeyRepository.findById(id);
         if(journey.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
         return mapToJourneyOut(journey.get());
     }
+
+    public void modifyJourney(Long id, String destination, @Nullable String description) throws TripServiceException {
+        Optional<Journey> journey = journeyRepository.findById(id);
+        if(journey.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        journey.get().setDestination(destination);
+        journey.get().setDescription(description);
+        journeyRepository.save(journey.get());
+    }
+
+    public void deleteJourney(Long id) { journeyRepository.deleteById(id); }
 }

@@ -59,56 +59,23 @@ public class TripController {
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-//    @PutMapping("/{tripId}")
-//    public ResponseEntity<?> putTrip(@PathVariable("tripId") Long id, @RequestBody TripInDto tripInDto) {
-//        TripServiceResult serviceResult = tripService.
-//
-//    }
+    @PutMapping("/{tripId}")
+    public ResponseEntity<?> putTrip(@PathVariable("tripId") Long id, @RequestBody TripInDto tripInDto) {
+        try {
+            tripService.modifyTrip(id, tripInDto);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (TripServiceException e) {
+            return switch (e.getError()) {
+                case BAD_REQUEST -> new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
+        }
+    }
 
     @DeleteMapping("/{tripId}")
     public ResponseEntity<?> deleteTrip(@PathVariable("tripId") Long id) {
         tripService.deleteTripById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @PostMapping("/{tripId}/journeys")
-    public ResponseEntity<?> postJourney(
-            @PathVariable("tripId") Long id,
-            @RequestParam("destination") String destination,
-            @RequestParam("description") Optional<String> description
-    ) {
-        try {
-            tripService.createJourney(id, destination, description.orElse(null));
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
-        }
-    }
-
-    @GetMapping("/{tripId}/journeys")
-    public ResponseEntity<?> getJourneys(@PathVariable("tripId") Long id) {
-        try {
-            return new ResponseEntity<>(tripService.findJourneys(id), HttpStatus.OK);
-        } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
-        }
-    }
-
-    @GetMapping("/{tripId}/journeys/{journeyId}")
-    public ResponseEntity<?> getJourneys(@PathVariable("tripId") Long tripId, @PathVariable("journeyId") Long id) {
-        try {
-            return new ResponseEntity<>(tripService.findJourneyById(tripId, id), HttpStatus.OK);
-        } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
-        }
     }
 }

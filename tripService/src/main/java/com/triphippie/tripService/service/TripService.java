@@ -1,9 +1,9 @@
 package com.triphippie.tripService.service;
 
-import com.triphippie.tripService.model.Trip;
-import com.triphippie.tripService.model.TripInDto;
-import com.triphippie.tripService.model.TripOutDto;
+import com.triphippie.tripService.model.*;
+import com.triphippie.tripService.repository.JourneyRepository;
 import com.triphippie.tripService.repository.TripRepository;
+import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,14 +18,16 @@ import java.util.Optional;
 @Service
 public class TripService {
     private TripRepository tripRepository;
+    private JourneyRepository journeyRepository;
 
     @Autowired
-    public TripService(TripRepository tripRepository) {
+    public TripService(TripRepository tripRepository, JourneyRepository journeyRepository) {
         this.tripRepository = tripRepository;
+        this.journeyRepository = journeyRepository;
     }
 
     private static TripOutDto mapToTripOut(Trip trip) {
-        TripOutDto tripOutDto = new TripOutDto(
+        return new TripOutDto(
                 trip.getId(),
                 trip.getUserId(),
                 trip.getStartDate(),
@@ -33,11 +35,22 @@ public class TripService {
                 trip.getPreferencies(),
                 trip.getDescription()
         );
-        return tripOutDto;
     }
 
-    public TripServiceResult createTrip(TripInDto tripInDto) {
-        if(tripInDto.getStartDate().isAfter(tripInDto.getEndDate())) return TripServiceResult.BAD_REQUEST;
+    private static JourneyOutDto mapToJourneyOut(Journey journey) {
+        return new JourneyOutDto(
+                journey.getId(),
+                journey.getDestination(),
+                journey.getDescription()
+        );
+    }
+
+    private boolean isTripPresent(Long tripId) {
+        return tripRepository.findById(tripId).isPresent();
+    }
+
+    public void createTrip(TripInDto tripInDto) throws TripServiceException {
+        if(tripInDto.getStartDate().isAfter(tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
         Trip trip = new Trip();
         trip.setUserId(tripInDto.getUserId());
         trip.setStartDate(tripInDto.getStartDate());
@@ -45,18 +58,16 @@ public class TripService {
         trip.setPreferencies(tripInDto.getPreferencies());
         trip.setDescription(tripInDto.getDescription());
         tripRepository.save(trip);
-
-        return TripServiceResult.SUCCESS;
     }
 
     public List<TripOutDto> findAllTrips(
             Integer size,
             Integer page,
-            Optional<LocalDate> startFilter,
-            Optional<LocalDate> endFilter
+            @Nullable LocalDate startFilter,
+            @Nullable LocalDate endFilter
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Trip> tripsPage = tripRepository.findByMonth(startFilter.orElse(null), endFilter.orElse(null), pageable);
+        Page<Trip> tripsPage = tripRepository.findByMonth(startFilter, endFilter, pageable);
         List<TripOutDto> outTrips = new ArrayList<>();
         for (Trip u : tripsPage) {
             outTrips.add(mapToTripOut(u));
@@ -87,4 +98,34 @@ public class TripService {
 //    }
 
     public void deleteTripById(Long id) { tripRepository.deleteById(id); }
+
+    public void createJourney(Long tripId, String destination, @Nullable String description) throws TripServiceException {
+        Optional<Trip> trip = tripRepository.findById(tripId);
+        if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+
+        Journey journey = new Journey();
+        journey.setTrip(trip.get());
+        journey.setDestination(destination);
+        journey.setDescription(description);
+        journeyRepository.save(journey);
+    }
+
+    public List<JourneyOutDto> findJourneys(Long tripId) throws TripServiceException {
+        Optional<Trip> trip = tripRepository.findById(tripId);
+        if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+
+        List<Journey> journeys = journeyRepository.findByTrip(trip.get());
+        List<JourneyOutDto> outJourneys = new ArrayList<>();
+        for (Journey j : journeys) {
+            outJourneys.add(mapToJourneyOut(j));
+        }
+
+        return outJourneys;
+    }
+
+    public JourneyOutDto findJourneyById(Long tripId, Long journeyId) throws TripServiceException {
+        Optional<Journey> journey = journeyRepository.findById(new JourneyKey(tripId, journeyId));
+        if(journey.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        return mapToJourneyOut(journey.get());
+    }
 }

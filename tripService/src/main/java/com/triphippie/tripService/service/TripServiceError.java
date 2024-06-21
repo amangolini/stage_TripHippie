@@ -1,7 +1,6 @@
 package com.triphippie.tripService.service;
 
-public enum TripServiceResult {
-    SUCCESS,
+public enum TripServiceError {
     NOT_FOUND,
     BAD_REQUEST
 }

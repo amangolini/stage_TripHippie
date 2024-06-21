@@ -3,6 +3,7 @@ package com.triphippie.tripService.controller;
 import com.triphippie.tripService.model.TripInDto;
 import com.triphippie.tripService.model.TripOutDto;
 import com.triphippie.tripService.service.TripService;
+import com.triphippie.tripService.service.TripServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +25,15 @@ public class TripController {
 
     @PostMapping
     public ResponseEntity<?> postTrip(@RequestBody TripInDto tripInDto) {
-        return switch (tripService.createTrip(tripInDto)) {
-            case SUCCESS -> new ResponseEntity<>(HttpStatus.CREATED);
-            case BAD_REQUEST -> new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        };
+        try{
+            tripService.createTrip(tripInDto);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (TripServiceException e) {
+            return switch (e.getError()) {
+                case BAD_REQUEST -> new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
+        }
     }
 
     @GetMapping
@@ -38,7 +43,7 @@ public class TripController {
             @RequestParam("startDate") Optional<LocalDate> startDate,
             @RequestParam("endDate") Optional<LocalDate> endDate
     ) {
-        return new ResponseEntity<>(tripService.findAllTrips(tripsSize, page, startDate, endDate), HttpStatus.OK);
+        return new ResponseEntity<>(tripService.findAllTrips(tripsSize, page, startDate.orElse(null), endDate.orElse(null)), HttpStatus.OK);
     }
 
     @GetMapping("/completed")
@@ -64,5 +69,46 @@ public class TripController {
     public ResponseEntity<?> deleteTrip(@PathVariable("tripId") Long id) {
         tripService.deleteTripById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/{tripId}/journeys")
+    public ResponseEntity<?> postJourney(
+            @PathVariable("tripId") Long id,
+            @RequestParam("destination") String destination,
+            @RequestParam("description") Optional<String> description
+    ) {
+        try {
+            tripService.createJourney(id, destination, description.orElse(null));
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (TripServiceException e) {
+            return switch (e.getError()) {
+                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
+        }
+    }
+
+    @GetMapping("/{tripId}/journeys")
+    public ResponseEntity<?> getJourneys(@PathVariable("tripId") Long id) {
+        try {
+            return new ResponseEntity<>(tripService.findJourneys(id), HttpStatus.OK);
+        } catch (TripServiceException e) {
+            return switch (e.getError()) {
+                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
+        }
+    }
+
+    @GetMapping("/{tripId}/journeys/{journeyId}")
+    public ResponseEntity<?> getJourneys(@PathVariable("tripId") Long tripId, @PathVariable("journeyId") Long id) {
+        try {
+            return new ResponseEntity<>(tripService.findJourneyById(tripId, id), HttpStatus.OK);
+        } catch (TripServiceException e) {
+            return switch (e.getError()) {
+                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
+        }
     }
 }

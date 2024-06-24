@@ -5,7 +5,13 @@ import com.triphippie.userService.model.User;
 import com.triphippie.userService.model.UserInDto;
 import com.triphippie.userService.model.UserOutDto;
 import com.triphippie.userService.repository.UserRepository;
+import com.triphippie.userService.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,25 +25,21 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    UserRepository userRepository;
+    private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
+    private AuthenticationManager authenticationManager;
+    private JwtService jwtService;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService) {
         this.userRepository = userRepository;
-    }
-
-    private boolean validateUserInDto(UserInDto userInDto) {
-        if(
-                userInDto.getUsername() == null ||
-                userInDto.getPassword() == null ||
-                userInDto.getFirstName() == null ||
-                userInDto.getLastName() == null
-        ) return false;
-        return true;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
     private boolean isUsernamePresent(String username) {
-        return userRepository.findByUsername(username).size() > 0;
+        return userRepository.findByUsername(username).isPresent();
     }
 
     private static UserOutDto mapToUserOut(User user) {
@@ -54,12 +56,11 @@ public class UserService {
     }
 
     public UserServiceResult createUser(UserInDto userInDto) {
-        if(!validateUserInDto(userInDto)) return UserServiceResult.BAD_REQUEST;
         if(isUsernamePresent(userInDto.getUsername())) return UserServiceResult.CONFLICT;
 
         User newUser = new User();
         newUser.setUsername(userInDto.getUsername());
-        newUser.setPassword(userInDto.getPassword());
+        newUser.setPassword(passwordEncoder.encode(userInDto.getPassword()));
         newUser.setFirstName(userInDto.getFirstName());
         newUser.setLastName(userInDto.getLastName());
         newUser.setRole(Role.USER);
@@ -107,7 +108,7 @@ public class UserService {
             return UserServiceResult.CONFLICT;
 
         user.setUsername(userInDto.getUsername());
-        if(userInDto.getPassword() != null) user.setPassword(userInDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userInDto.getPassword()));
         user.setFirstName(userInDto.getFirstName());
         user.setLastName(userInDto.getLastName());
         user.setDateOfBirth(userInDto.getDateOfBirth());
@@ -156,5 +157,15 @@ public class UserService {
         }
 
         userRepository.deleteUserProfileImageUrl(id);
+    }
+
+    /* SECURITY METHODS */
+    public String login(String username, String password) {
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        return "Bearer " + jwtService.generateToken(auth);
     }
 }

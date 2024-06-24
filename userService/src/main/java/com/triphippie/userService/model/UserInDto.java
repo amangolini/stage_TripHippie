@@ -1,18 +1,19 @@
 package com.triphippie.userService.model;
 
 import lombok.Data;
+import lombok.NonNull;
 
 import java.time.LocalDate;
 
 @Data
 public class UserInDto {
-    private String username;
+    @NonNull private String username;
 
-    private String password;
+    @NonNull private String password;
 
-    private String firstName;
+    @NonNull private String firstName;
 
-    private String lastName;
+    @NonNull private String lastName;
 
     private LocalDate dateOfBirth;
 

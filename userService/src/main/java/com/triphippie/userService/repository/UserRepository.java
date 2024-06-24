@@ -13,7 +13,9 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-    public List<User> findByUsername(String username);
+    public List<User> findByUsernameContaining(String username);
+
+    public Optional<User> findByUsername(String username);
 
     @Query(value = "SELECT * FROM trip_user OFFSET ?1 ROWS FETCH NEXT ?2 ROWS ONLY", nativeQuery = true)
     public List<User> findUsersWithOffset(Integer offset, Integer next);

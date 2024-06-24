@@ -27,6 +27,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    /* CRUD MAPPERS */
     @PostMapping
     public ResponseEntity<?> postUser(@RequestBody UserInDto user) {
         UserServiceResult result = userService.createUser(user);
@@ -105,5 +106,14 @@ public class UserController {
         } catch(IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /* SECURITY MAPPERS */
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(
+            @RequestParam(name = "username") String username,
+            @RequestParam(name = "password") String password
+    ) {
+        return new ResponseEntity<>(userService.login(username,password), HttpStatus.OK);
     }
 }

@@ -53,4 +53,10 @@ public class JwtService {
         if(claims.getExpiration().before(new Date())) return false;
         return getUsernameFromToken(token).equals(userDetails.getUsername());
     }
+
+    public boolean validateToken(String token) {
+        Claims claims = extractAllClaims(token);
+        if(claims.getExpiration().before(new Date())) return false;
+        return true;
+    }
 }

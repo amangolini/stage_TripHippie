@@ -124,12 +124,14 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public void saveProfileImage(Integer id, MultipartFile image) throws IOException {
+    public UserServiceResult saveProfileImage(Integer id, MultipartFile image) throws IOException {
+        if(findUserById(id).isEmpty()) return UserServiceResult.NOT_FOUND;
         String filename = image.getOriginalFilename();
         String newFilename = id + "." + filename.substring(filename.lastIndexOf(".") + 1);
         String uploadPath = "src/main/resources/static/images/profileImages/" + newFilename;
         Files.copy(image.getInputStream(), Path.of(uploadPath), StandardCopyOption.REPLACE_EXISTING);
         userRepository.saveUserProfileImageUrl(id, newFilename);
+        return UserServiceResult.SUCCESS;
     }
 
     public Optional<byte[]> findProfileImage(Integer id) throws IOException {
@@ -167,5 +169,9 @@ public class UserService {
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         return "Bearer " + jwtService.generateToken(auth);
+    }
+
+    public boolean validateToken(String token) {
+        return jwtService.validateToken(token);
     }
 }

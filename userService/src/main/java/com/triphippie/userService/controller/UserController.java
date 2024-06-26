@@ -2,12 +2,13 @@ package com.triphippie.userService.controller;
 
 import com.triphippie.userService.model.UserInDto;
 import com.triphippie.userService.model.UserOutDto;
-import com.triphippie.userService.service.UserServiceResult;
 import com.triphippie.userService.service.UserService;
+import com.triphippie.userService.service.UserServiceResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,16 +51,17 @@ public class UserController {
                 : new ResponseEntity<>(userService.findAllUsersByUsername(usersSize, page, username.get()), HttpStatus.OK);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getUser(@PathVariable("userId") Integer id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUser(@PathVariable("id") Integer id) {
         Optional<UserOutDto> user = userService.findUserById(id);
         return (user.isPresent())
                 ? new ResponseEntity<>(user.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<?> putUser(@PathVariable("userId") Integer id, @RequestBody UserInDto user) {
+    @PutMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id")
+    public ResponseEntity<?> putUser(@PathVariable("id") Integer id, @RequestBody UserInDto user) {
         UserServiceResult result = userService.updateUser(id, user);
         return switch (result) {
             case SUCCESS -> new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -69,8 +71,9 @@ public class UserController {
         };
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable("userId") Integer id) {
+    @DeleteMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal.id")
+    public ResponseEntity<?> deleteUser(@PathVariable("id") Integer id) {
         userService.deleteUserById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -89,16 +92,22 @@ public class UserController {
     }
 
     @PostMapping("/{id}/profileImage")
+    @PreAuthorize("#id == authentication.principal.id")
     public ResponseEntity<?> postProfileImage(@PathVariable Integer id, @RequestParam("profileImage") MultipartFile file) {
         try {
-            userService.saveProfileImage(id, file);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            UserServiceResult result = userService.saveProfileImage(id, file);
+            return switch (result) {
+                case SUCCESS -> new ResponseEntity<>(HttpStatus.CREATED);
+                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
         } catch(IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @DeleteMapping("/{id}/profileImage")
+    @PreAuthorize("#id == authentication.principal.id")
     public ResponseEntity<?> deleteProfileImage(@PathVariable Integer id) {
         try {
             userService.deleteProfileImage(id);
@@ -115,5 +124,10 @@ public class UserController {
             @RequestParam(name = "password") String password
     ) {
         return new ResponseEntity<>(userService.login(username,password), HttpStatus.OK);
+    }
+
+    @PostMapping("/validateToken")
+    public ResponseEntity<Boolean> validateToken(@RequestParam(name = "token") String token) {
+        return new ResponseEntity<>(userService.validateToken(token), HttpStatus.OK);
     }
 }

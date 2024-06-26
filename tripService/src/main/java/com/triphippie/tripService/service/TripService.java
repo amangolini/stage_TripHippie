@@ -59,7 +59,7 @@ public class TripService {
         trip.setUserId(tripInDto.getUserId());
         trip.setStartDate(tripInDto.getStartDate());
         trip.setEndDate(tripInDto.getEndDate());
-        trip.setPreferencies(tripInDto.getPreferencies());
+        trip.setPreferencies(tripInDto.getPreferences());
         trip.setDescription(tripInDto.getDescription());
         tripRepository.save(trip);
     }
@@ -102,7 +102,7 @@ public class TripService {
         trip.setUserId(tripInDto.getUserId());
         trip.setStartDate(tripInDto.getStartDate());
         trip.setEndDate(tripInDto.getEndDate());
-        trip.setPreferencies(tripInDto.getPreferencies());
+        trip.setPreferencies(tripInDto.getPreferences());
         trip.setDescription(tripInDto.getDescription());
 
         tripRepository.save(trip);

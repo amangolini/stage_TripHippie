@@ -16,7 +16,7 @@ public class TripOutDto {
 
     private LocalDate endDate;
 
-    private String preferencies;
+    private String preferences;
 
     private String description;
 }

@@ -32,7 +32,10 @@ public class TriphippieUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(), user.getPassword(), mapToAuthorities(user.getRole()));
+        /*return new org.springframework.security.core.userdetails.User(
+                user.getUsername(), user.getPassword(), mapToAuthorities(user.getRole()));*/
+        return new TriphippieUserDetails(
+                user.getId(), user.getUsername(), user.getPassword(), mapToAuthorities(user.getRole())
+        );
     }
 }

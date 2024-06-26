@@ -13,7 +13,7 @@ public class TripInDto {
 
     @NonNull private LocalDate endDate;
 
-    private String preferencies;
+    private String preferences;
 
     private String description;
 }

@@ -1,9 +1,8 @@
 package com.triphippie.userService.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SecurityException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -54,9 +53,19 @@ public class JwtService {
         return getUsernameFromToken(token).equals(userDetails.getUsername());
     }
 
-    public boolean validateToken(String token) {
+    public String validateToken(String token) {
         Claims claims = extractAllClaims(token);
-        if(claims.getExpiration().before(new Date())) return false;
-        return true;
+        return claims.getSubject();
+
+//        try {
+//            Jwts.parserBuilder().setSigningKey(getKey()).build().parse(token);
+//            return true;
+//        } catch (SecurityException | ExpiredJwtException e) {
+//            return false;
+//        }
+
+//        Claims claims = extractAllClaims(token);
+//        if(claims.getExpiration().before(new Date())) return false;
+//        return true;
     }
 }

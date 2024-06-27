@@ -171,7 +171,9 @@ public class UserService {
         return "Bearer " + jwtService.generateToken(auth);
     }
 
-    public boolean validateToken(String token) {
-        return jwtService.validateToken(token);
+    public Optional<Integer> validateToken(String token) {
+        String username = jwtService.validateToken(token);
+        Optional<User> user = userRepository.findByUsername(username);
+        return user.isPresent() ? Optional.of(user.get().getId()) : Optional.empty();
     }
 }

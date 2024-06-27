@@ -1,18 +1,25 @@
 package com.triphippie.apiGateway.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
 @Component
 public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> {
     private final WebClient.Builder webClientBuilder;
 
+    @Autowired
     public AuthFilter(WebClient.Builder webClientBuilder) {
         super(Config.class);
         this.webClientBuilder = webClientBuilder;
@@ -22,22 +29,28 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             if(!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION))
-                throw new RuntimeException("Missing auth information");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing auth information");
 
             String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
             if(!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
-                throw new RuntimeException("Incorrect auth format");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Authorization format");
             }
             String jwt = authHeader.substring(7);
-            String body = "{ token: " + jwt + " }";
+
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("token", jwt);
             return webClientBuilder.build()
                     .post()
-                    .uri("http://user-service/api/users/validate")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(body))
-                    .retrieve().bodyToMono(Boolean.class)
-                    .map(aBoolean -> {
-                        System.out.println(aBoolean);
+                    .uri("http://user-service/api/users/validateToken")
+                    .body(BodyInserters.fromFormData(formData))
+                    .retrieve()
+                    
+                    .bodyToMono(String.class)
+                    .map(user -> {
+                        exchange.getRequest()
+                                .mutate()
+                                .header("authUser", user);
+                        System.out.println(user);
                         return exchange;
                     }).flatMap(chain::filter);
         };

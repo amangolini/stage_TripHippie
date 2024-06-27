@@ -127,7 +127,10 @@ public class UserController {
     }
 
     @PostMapping("/validateToken")
-    public ResponseEntity<Boolean> validateToken(@RequestParam(name = "token") String token) {
-        return new ResponseEntity<>(userService.validateToken(token), HttpStatus.OK);
+    public ResponseEntity<Integer> validateToken(@RequestParam(name = "token") String token) {
+        Optional<Integer> userId = userService.validateToken(token);
+        return (userId.isPresent())
+                ? new ResponseEntity<>(userId.get(), HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

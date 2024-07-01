@@ -1,5 +1,6 @@
 package com.triphippie.apiGateway.configuration;
 
+import com.triphippie.apiGateway.exception.AuthException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -44,7 +45,14 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                     .uri("http://user-service/api/users/validateToken")
                     .body(BodyInserters.fromFormData(formData))
                     .retrieve()
-                    
+                    .onStatus(
+                            HttpStatusCode::isError,
+                            response -> switch (response.statusCode().value()) {
+                                case 401 -> Mono.error(new AuthException(HttpStatus.UNAUTHORIZED));
+                                case 403 -> Mono.error(new AuthException(HttpStatus.FORBIDDEN));
+                                default -> Mono.error(new AuthException(HttpStatus.INTERNAL_SERVER_ERROR));
+                            }
+                    )
                     .bodyToMono(String.class)
                     .map(user -> {
                         exchange.getRequest()

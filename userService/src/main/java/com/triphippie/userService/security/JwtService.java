@@ -56,16 +56,5 @@ public class JwtService {
     public String validateToken(String token) {
         Claims claims = extractAllClaims(token);
         return claims.getSubject();
-
-//        try {
-//            Jwts.parserBuilder().setSigningKey(getKey()).build().parse(token);
-//            return true;
-//        } catch (SecurityException | ExpiredJwtException e) {
-//            return false;
-//        }
-
-//        Claims claims = extractAllClaims(token);
-//        if(claims.getExpiration().before(new Date())) return false;
-//        return true;
     }
 }

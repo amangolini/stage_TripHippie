@@ -110,14 +110,14 @@ public class TripService {
 
     public void deleteTripById(Long id) { tripRepository.deleteById(id); }
 
-    public void createJourney(Long tripId, String destination, @Nullable String description) throws TripServiceException {
-        Optional<Trip> trip = tripRepository.findById(tripId);
+    public void createJourney(JourneyInDto journeyInDto) throws TripServiceException {
+        Optional<Trip> trip = tripRepository.findById(journeyInDto.getTripId());
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
 
         Journey journey = new Journey();
         journey.setTrip(trip.get());
-        journey.setDestination(destination);
-        journey.setDescription(description);
+        journey.setDestination(journeyInDto.getDestination());
+        journey.setDescription(journeyInDto.getDescription());
         journeyRepository.save(journey);
     }
 
@@ -140,11 +140,11 @@ public class TripService {
         return mapToJourneyOut(journey.get());
     }
 
-    public void modifyJourney(Long id, String destination, @Nullable String description) throws TripServiceException {
+    public void modifyJourney(Long id, JourneyUpdate journeyUpdate) throws TripServiceException {
         Optional<Journey> journey = journeyRepository.findById(id);
         if(journey.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
-        journey.get().setDestination(destination);
-        journey.get().setDescription(description);
+        journey.get().setDestination(journeyUpdate.getDestination());
+        journey.get().setDescription(journeyUpdate.getDescription());
         journeyRepository.save(journey.get());
     }
 

@@ -1,5 +1,7 @@
 package com.triphippie.tripService.controller;
 
+import com.triphippie.tripService.model.JourneyInDto;
+import com.triphippie.tripService.model.JourneyUpdate;
 import com.triphippie.tripService.service.TripService;
 import com.triphippie.tripService.service.TripServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +23,9 @@ public class JourneyController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> postJourney(
-            @RequestParam("tripId") Long id,
-            @RequestParam("destination") String destination,
-            @RequestParam("description") Optional<String> description
-    ) {
+    public ResponseEntity<?> postJourney(@RequestBody JourneyInDto journeyInDto) {
         try {
-            tripService.createJourney(id, destination, description.orElse(null));
+            tripService.createJourney(journeyInDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             return switch (e.getError()) {
@@ -64,11 +62,10 @@ public class JourneyController {
     @PutMapping("/{journeyId}")
     public ResponseEntity<?> putJourney(
             @PathVariable("journeyId") Long id,
-            @RequestParam("destination") String destination,
-            @RequestParam("description") Optional<String> description
+            @RequestBody JourneyUpdate update
     ) {
         try {
-            tripService.modifyJourney(id, destination, description.orElse(null));
+            tripService.modifyJourney(id, update);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             return switch (e.getError()) {

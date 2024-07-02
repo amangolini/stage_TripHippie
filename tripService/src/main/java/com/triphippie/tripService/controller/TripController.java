@@ -24,9 +24,12 @@ public class TripController {
     }
 
     @PostMapping
-    public ResponseEntity<?> postTrip(@RequestBody TripInDto tripInDto) {
+    public ResponseEntity<?> postTrip(
+            @RequestHeader("auth-user-id") Integer userId,
+            @RequestBody TripInDto tripInDto
+    ) {
         try{
-            tripService.createTrip(tripInDto);
+            tripService.createTrip(userId, tripInDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             return switch (e.getError()) {
@@ -60,22 +63,37 @@ public class TripController {
     }
 
     @PutMapping("/{tripId}")
-    public ResponseEntity<?> putTrip(@PathVariable("tripId") Long id, @RequestBody TripInDto tripInDto) {
+    public ResponseEntity<?> putTrip(
+            @RequestHeader("auth-user-id") Integer userId,
+            @PathVariable("tripId") Long id,
+            @RequestBody TripInDto tripInDto
+    ) {
         try {
-            tripService.modifyTrip(id, tripInDto);
+            tripService.modifyTrip(userId, id, tripInDto);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             return switch (e.getError()) {
                 case BAD_REQUEST -> new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
                 default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             };
         }
     }
 
     @DeleteMapping("/{tripId}")
-    public ResponseEntity<?> deleteTrip(@PathVariable("tripId") Long id) {
-        tripService.deleteTripById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> deleteTrip(
+            @RequestHeader("auth-user-id") Integer userId,
+            @PathVariable("tripId") Long id
+    ) {
+        try {
+            tripService.deleteTripById(userId, id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (TripServiceException e) {
+            return switch (e.getError()) {
+                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
+        }
     }
 }

@@ -53,10 +53,10 @@ public class TripService {
         return start.isBefore(end);
     }
 
-    public void createTrip(TripInDto tripInDto) throws TripServiceException {
+    public void createTrip(Integer userId, TripInDto tripInDto) throws TripServiceException {
         if(!validateDates(tripInDto.getStartDate(), tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
         Trip trip = new Trip();
-        trip.setUserId(tripInDto.getUserId());
+        trip.setUserId(userId);
         trip.setStartDate(tripInDto.getStartDate());
         trip.setEndDate(tripInDto.getEndDate());
         trip.setPreferencies(tripInDto.getPreferences());
@@ -93,13 +93,13 @@ public class TripService {
         return trip.map(TripService::mapToTripOut);
     }
 
-    public void modifyTrip(Long id, TripInDto tripInDto) throws TripServiceException {
+    public void modifyTrip(Integer userId, Long id, TripInDto tripInDto) throws TripServiceException {
         if(!validateDates(tripInDto.getStartDate(), tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
         Optional<Trip> oldTrip = tripRepository.findById(id);
         if(oldTrip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        if(!oldTrip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
 
         Trip trip = oldTrip.get();
-        trip.setUserId(tripInDto.getUserId());
         trip.setStartDate(tripInDto.getStartDate());
         trip.setEndDate(tripInDto.getEndDate());
         trip.setPreferencies(tripInDto.getPreferences());
@@ -108,11 +108,17 @@ public class TripService {
         tripRepository.save(trip);
     }
 
-    public void deleteTripById(Long id) { tripRepository.deleteById(id); }
+    public void deleteTripById(Integer userId, Long id) throws TripServiceException {
+        Optional<Trip> oldTrip = tripRepository.findById(id);
+        if(oldTrip.isEmpty()) return;
+        if(!oldTrip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        tripRepository.deleteById(id);
+    }
 
-    public void createJourney(JourneyInDto journeyInDto) throws TripServiceException {
+    public void createJourney(Integer userId, JourneyInDto journeyInDto) throws TripServiceException {
         Optional<Trip> trip = tripRepository.findById(journeyInDto.getTripId());
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        if(!trip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
 
         Journey journey = new Journey();
         journey.setTrip(trip.get());
@@ -140,13 +146,20 @@ public class TripService {
         return mapToJourneyOut(journey.get());
     }
 
-    public void modifyJourney(Long id, JourneyUpdate journeyUpdate) throws TripServiceException {
+    public void modifyJourney(Integer userId, Long id, JourneyUpdate journeyUpdate) throws TripServiceException {
         Optional<Journey> journey = journeyRepository.findById(id);
         if(journey.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        if(!journey.get().getTrip().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+
         journey.get().setDestination(journeyUpdate.getDestination());
         journey.get().setDescription(journeyUpdate.getDescription());
         journeyRepository.save(journey.get());
     }
 
-    public void deleteJourney(Long id) { journeyRepository.deleteById(id); }
+    public void deleteJourney(Integer userId, Long id) throws TripServiceException {
+        Optional<Journey> journey = journeyRepository.findById(id);
+        if(journey.isEmpty()) return;
+        if(!journey.get().getTrip().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        journeyRepository.deleteById(id);
+    }
 }

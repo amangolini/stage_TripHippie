@@ -1,6 +1,7 @@
 package com.triphippie.apiGateway.configuration;
 
 import com.triphippie.apiGateway.exception.AuthException;
+import com.triphippie.apiGateway.model.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -53,11 +54,12 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
                                 default -> Mono.error(new AuthException(HttpStatus.INTERNAL_SERVER_ERROR));
                             }
                     )
-                    .bodyToMono(String.class)
+                    .bodyToMono(UserDto.class)
                     .map(user -> {
                         exchange.getRequest()
                                 .mutate()
-                                .header("authUser", user);
+                                .header("auth-user-id", user.id().toString())
+                                .header("auth-user-role", user.role());
                         System.out.println(user);
                         return exchange;
                     }).flatMap(chain::filter);

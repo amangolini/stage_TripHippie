@@ -22,18 +22,38 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    private TriphippieUserDetailsService triphippieUserDetailsService;
+//    private TriphippieUserDetailsService triphippieUserDetailsService;
+//
+//    private JwtAuthenticationFilter jwtAuthenticationFilter;
+//
+//    @Autowired
+//    public SecurityConfiguration(
+//            TriphippieUserDetailsService triphippieUserDetailsService,
+//            JwtAuthenticationFilter jwtAuthenticationFilter
+//    ) {
+//        this.triphippieUserDetailsService = triphippieUserDetailsService;
+//        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+//    }
 
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @Autowired
-    public SecurityConfiguration(
-            TriphippieUserDetailsService triphippieUserDetailsService,
-            JwtAuthenticationFilter jwtAuthenticationFilter
-    ) {
-        this.triphippieUserDetailsService = triphippieUserDetailsService;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+//        http
+//                .csrf((csrf) -> csrf.disable())
+//                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+//                .authorizeHttpRequests((authorizeHttpRequests) ->
+//                        authorizeHttpRequests
+//                                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+//                                .requestMatchers("api/users/login").permitAll()
+//                                .requestMatchers("api/users/validateToken").permitAll()
+//                                .requestMatchers(HttpMethod.POST, "api/users").permitAll()
+//                                .requestMatchers(HttpMethod.GET, "api/users/**").permitAll()
+//                                .anyRequest()
+//                                .authenticated()
+//                )
+//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -43,14 +63,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
                                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                                .requestMatchers("api/users/login").permitAll()
-                                .requestMatchers("api/users/validateToken").permitAll()
-                                .requestMatchers(HttpMethod.POST, "api/users").permitAll()
-                                .requestMatchers(HttpMethod.GET, "api/users/**").permitAll()
-                                .anyRequest()
-                                .authenticated()
-                )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                                .requestMatchers("api/users").permitAll()
+                                .requestMatchers("api/users/**").permitAll()
+                );
 
         return http.build();
     }

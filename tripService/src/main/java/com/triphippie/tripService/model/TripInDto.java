@@ -7,8 +7,6 @@ import java.time.LocalDate;
 
 @Data
 public class TripInDto {
-    @NonNull private Integer userId;
-
     @NonNull private LocalDate startDate;
 
     @NonNull private LocalDate endDate;

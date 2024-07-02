@@ -23,13 +23,17 @@ public class JourneyController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> postJourney(@RequestBody JourneyInDto journeyInDto) {
+    public ResponseEntity<?> postJourney(
+            @RequestHeader("auth-user-id") Integer userId,
+            @RequestBody JourneyInDto journeyInDto
+    ) {
         try {
-            tripService.createJourney(journeyInDto);
+            tripService.createJourney(userId, journeyInDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             return switch (e.getError()) {
                 case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
                 default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             };
         }
@@ -61,23 +65,35 @@ public class JourneyController {
 
     @PutMapping("/{journeyId}")
     public ResponseEntity<?> putJourney(
+            @RequestHeader("auth-user-id") Integer userId,
             @PathVariable("journeyId") Long id,
             @RequestBody JourneyUpdate update
     ) {
         try {
-            tripService.modifyJourney(id, update);
+            tripService.modifyJourney(userId, id, update);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             return switch (e.getError()) {
                 case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
                 default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             };
         }
     }
 
     @DeleteMapping("/{journeyId}")
-    public ResponseEntity<?> deleteJourney(@PathVariable("journeyId") Long id) {
-        tripService.deleteJourney(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<?> deleteJourney(
+            @RequestHeader("auth-user-id") Integer userId,
+            @PathVariable("journeyId") Long id
+    ) {
+        try {
+            tripService.deleteJourney(userId, id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (TripServiceException e) {
+            return switch (e.getError()) {
+                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            };
+        }
     }
 }

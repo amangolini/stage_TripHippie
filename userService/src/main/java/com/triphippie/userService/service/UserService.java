@@ -1,9 +1,6 @@
 package com.triphippie.userService.service;
 
-import com.triphippie.userService.model.Role;
-import com.triphippie.userService.model.User;
-import com.triphippie.userService.model.UserInDto;
-import com.triphippie.userService.model.UserOutDto;
+import com.triphippie.userService.model.*;
 import com.triphippie.userService.repository.UserRepository;
 import com.triphippie.userService.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -96,10 +95,9 @@ public class UserService {
         return user.map(UserService::mapToUserOut);
     }
 
-    /*
-    * MIGLIORARE EVENTUALMENTE GESTIONE PASSWORD
-    * */
-    public UserServiceResult updateUser(Integer id, UserInDto userInDto) {
+    public UserServiceResult updateUser(Integer principal, Integer id, UserInDto userInDto) {
+        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
+
         Optional<User> oldUser = userRepository.findById(id);
         if(oldUser.isEmpty()) return UserServiceResult.NOT_FOUND;
 
@@ -120,11 +118,15 @@ public class UserService {
         return UserServiceResult.SUCCESS;
     }
 
-    public void deleteUserById(Integer id) {
+    public UserServiceResult deleteUserById(Integer principal, Integer id) {
+        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
+
         userRepository.deleteById(id);
+        return UserServiceResult.SUCCESS;
     }
 
-    public UserServiceResult saveProfileImage(Integer id, MultipartFile image) throws IOException {
+    public UserServiceResult saveProfileImage(Integer principal, Integer id, MultipartFile image) throws IOException {
+        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
         if(findUserById(id).isEmpty()) return UserServiceResult.NOT_FOUND;
         String filename = image.getOriginalFilename();
         String newFilename = id + "." + filename.substring(filename.lastIndexOf(".") + 1);
@@ -148,10 +150,12 @@ public class UserService {
         }
     }
 
-    public void deleteProfileImage(Integer id) throws IOException {
+    public UserServiceResult deleteProfileImage(Integer principal, Integer id) throws IOException {
+        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
+
         Optional<String> filePath = userRepository.findUserProfileImageUrlById(id);
 
-        if(filePath.isEmpty()) return;
+        if(filePath.isEmpty()) return UserServiceResult.SUCCESS;
         Path imagePath = Path.of("src/main/resources/static/images/profileImages/" + filePath.get());
 
         if (Files.exists(imagePath)) {
@@ -159,21 +163,27 @@ public class UserService {
         }
 
         userRepository.deleteUserProfileImageUrl(id);
+        return UserServiceResult.SUCCESS;
     }
 
     /* SECURITY METHODS */
-    public String login(String username, String password) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
+    public String login(AuthDto authDto) {
+        Optional<User> user = userRepository.findByUsername(authDto.username());
+        if(user.isEmpty()) throw new UsernameNotFoundException("User not found");
 
-        return "Bearer " + jwtService.generateToken(auth);
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authDto.username(), authDto.password())
+        );
+        //SecurityContextHolder.getContext().setAuthentication(auth);
+
+        return "Bearer " + jwtService.generateToken(auth, Map.of("user-id", user.get().getId()));
     }
 
-    public Optional<Integer> validateToken(String token) {
+    public Optional<ValidateUserDto> validateToken(String token) {
         String username = jwtService.validateToken(token);
         Optional<User> user = userRepository.findByUsername(username);
-        return user.isPresent() ? Optional.of(user.get().getId()) : Optional.empty();
+        return user.isPresent()
+                ? Optional.of(new ValidateUserDto(user.get().getId(), user.get().getRole().name()))
+                : Optional.empty();
     }
 }

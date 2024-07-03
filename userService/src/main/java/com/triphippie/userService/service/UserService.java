@@ -95,9 +95,7 @@ public class UserService {
         return user.map(UserService::mapToUserOut);
     }
 
-    public UserServiceResult updateUser(Integer principal, Integer id, UserInDto userInDto) {
-        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
-
+    public UserServiceResult updateUser(Integer id, UserInDto userInDto) {
         Optional<User> oldUser = userRepository.findById(id);
         if(oldUser.isEmpty()) return UserServiceResult.NOT_FOUND;
 
@@ -118,15 +116,16 @@ public class UserService {
         return UserServiceResult.SUCCESS;
     }
 
-    public UserServiceResult deleteUserById(Integer principal, Integer id) {
-        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
-
+    public void deleteUserById(Integer id) {
+        try {
+            deleteProfileImage(id);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         userRepository.deleteById(id);
-        return UserServiceResult.SUCCESS;
     }
 
-    public UserServiceResult saveProfileImage(Integer principal, Integer id, MultipartFile image) throws IOException {
-        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
+    public UserServiceResult saveProfileImage(Integer id, MultipartFile image) throws IOException {
         if(findUserById(id).isEmpty()) return UserServiceResult.NOT_FOUND;
         String filename = image.getOriginalFilename();
         String newFilename = id + "." + filename.substring(filename.lastIndexOf(".") + 1);
@@ -150,9 +149,7 @@ public class UserService {
         }
     }
 
-    public UserServiceResult deleteProfileImage(Integer principal, Integer id) throws IOException {
-        if(!principal.equals(id)) return UserServiceResult.FORBIDDEN;
-
+    public UserServiceResult deleteProfileImage(Integer id) throws IOException {
         Optional<String> filePath = userRepository.findUserProfileImageUrlById(id);
 
         if(filePath.isEmpty()) return UserServiceResult.SUCCESS;

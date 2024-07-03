@@ -4,6 +4,5 @@ public enum UserServiceResult {
     SUCCESS,
     BAD_REQUEST,
     CONFLICT,
-    NOT_FOUND,
-    FORBIDDEN
+    NOT_FOUND
 }

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -31,11 +32,11 @@ public class JourneyController {
             tripService.createJourney(userId, journeyInDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
+            switch (e.getError()) {
+                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -44,10 +45,10 @@ public class JourneyController {
         try {
             return new ResponseEntity<>(tripService.findJourneys(id), HttpStatus.OK);
         } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
+            switch (e.getError()) {
+                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -56,10 +57,10 @@ public class JourneyController {
         try {
             return new ResponseEntity<>(tripService.findJourneyById(id), HttpStatus.OK);
         } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
+            switch (e.getError()) {
+                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -73,11 +74,11 @@ public class JourneyController {
             tripService.modifyJourney(userId, id, update);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case NOT_FOUND -> new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
+            switch (e.getError()) {
+                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -90,10 +91,10 @@ public class JourneyController {
             tripService.deleteJourney(userId, id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
-            return switch (e.getError()) {
-                case FORBIDDEN -> new ResponseEntity<>(HttpStatus.FORBIDDEN);
-                default -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            };
+            switch (e.getError()) {
+                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -27,9 +28,8 @@ public class ChatbotController {
             @RequestBody Query query
     ) {
         Optional<Result> result = service.ask(query, authUser);
-        return result.isPresent()
-                ? new ResponseEntity<>(result, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        if(result.isPresent()) return new ResponseEntity<>(result, HttpStatus.OK);
+        else throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @PostMapping("/summarize")
@@ -38,9 +38,8 @@ public class ChatbotController {
             @RequestBody Query query
     ) {
         Optional<Destination> result = service.summarizeDestination(query);
-        return result.isPresent()
-                ? new ResponseEntity<>(result, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        if(result.isPresent()) return new ResponseEntity<>(result, HttpStatus.OK);
+        else throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

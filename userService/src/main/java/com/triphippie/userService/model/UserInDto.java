@@ -1,22 +1,29 @@
 package com.triphippie.userService.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NonNull;
 
 import java.time.LocalDate;
 
 @Data
 public class UserInDto {
-    @NonNull private String username;
+    @NotEmpty @NotNull
+    private String username;
 
-    @NonNull private String password;
+    @NotEmpty @NotNull
+    private String password;
 
-    @NonNull private String firstName;
+    @NotEmpty @NotNull
+    private String firstName;
 
-    @NonNull private String lastName;
+    @NotEmpty @NotNull
+    private String lastName;
 
     private LocalDate dateOfBirth;
 
+    @Email
     private String email;
 
     private String about;

@@ -20,8 +20,8 @@ public interface Assistant {
 
     @SystemMessage(
             """
-                    Extract information about the tourist destination mentioned in {{dest}}.
-                    Provide the answer in JSON format.
+                    IF {{dest}} is a tourist destination, extract information about it in JSON format.
+                    Otherwise do nothing.
                     """
     )
     Destination summarizeDestination(@V(value = "dest") String destination);

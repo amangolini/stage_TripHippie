@@ -1,7 +1,6 @@
 package com.triphippie.tripService.controller;
 
-import com.triphippie.tripService.model.journey.JourneyInDto;
-import com.triphippie.tripService.model.journey.JourneyUpdate;
+import com.triphippie.tripService.model.ParticipationDto;
 import com.triphippie.tripService.service.TripService;
 import com.triphippie.tripService.service.TripServiceException;
 import jakarta.validation.Valid;
@@ -13,22 +12,23 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @Controller
-@RequestMapping("api/journeys")
-public class JourneyController {
+@RequestMapping("api/participation")
+public class ParticipationController {
+
     private TripService tripService;
 
     @Autowired
-    public JourneyController(TripService tripService) {
+    public ParticipationController(TripService tripService) {
         this.tripService = tripService;
     }
 
     @PostMapping()
-    public ResponseEntity<?> postJourney(
+    public ResponseEntity<?> postParticipation(
             @RequestHeader("auth-user-id") Integer userId,
-            @RequestBody @Valid JourneyInDto journeyInDto
+            @RequestBody @Valid ParticipationDto inDto
     ) {
         try {
-            tripService.createJourney(userId, journeyInDto);
+            tripService.createParticipation(userId, inDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -42,7 +42,7 @@ public class JourneyController {
     @GetMapping()
     public ResponseEntity<?> getJourneys(@RequestParam("tripId") Long id) {
         try {
-            return new ResponseEntity<>(tripService.findJourneys(id), HttpStatus.OK);
+            return new ResponseEntity<>(tripService.findParticipation(id), HttpStatus.OK);
         } catch (TripServiceException e) {
             switch (e.getError()) {
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -51,43 +51,13 @@ public class JourneyController {
         }
     }
 
-    @GetMapping("/{journeyId}")
-    public ResponseEntity<?> getJourney(@PathVariable("journeyId") Long id) {
-        try {
-            return new ResponseEntity<>(tripService.findJourneyById(id), HttpStatus.OK);
-        } catch (TripServiceException e) {
-            switch (e.getError()) {
-                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-    }
-
-    @PutMapping("/{journeyId}")
-    public ResponseEntity<?> putJourney(
-            @RequestHeader("auth-user-id") Integer userId,
-            @PathVariable("journeyId") Long id,
-            @RequestBody @Valid JourneyUpdate update
-    ) {
-        try {
-            tripService.modifyJourney(userId, id, update);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (TripServiceException e) {
-            switch (e.getError()) {
-                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
-                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-    }
-
-    @DeleteMapping("/{journeyId}")
+    @DeleteMapping()
     public ResponseEntity<?> deleteJourney(
             @RequestHeader("auth-user-id") Integer userId,
-            @PathVariable("journeyId") Long id
+            @RequestBody @Valid ParticipationDto inDto
     ) {
         try {
-            tripService.deleteJourney(userId, id);
+            tripService.deleteParticipation(userId, inDto);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {

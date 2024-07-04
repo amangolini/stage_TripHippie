@@ -1,6 +1,6 @@
 package com.triphippie.tripService.repository;
 
-import com.triphippie.tripService.model.Trip;
+import com.triphippie.tripService.model.trip.Trip;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

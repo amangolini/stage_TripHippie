@@ -4,6 +4,7 @@ import com.triphippie.chatbotService.model.Destination;
 import com.triphippie.chatbotService.model.Query;
 import com.triphippie.chatbotService.model.Result;
 import com.triphippie.chatbotService.service.ChatbotService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class ChatbotController {
     @PostMapping("/query")
     public ResponseEntity<?> postQuery(
             @RequestHeader("auth-user-id") Integer authUser,
-            @RequestBody Query query
+            @RequestBody @Valid Query query
     ) {
         Optional<Result> result = service.ask(query, authUser);
         if(result.isPresent()) return new ResponseEntity<>(result, HttpStatus.OK);
@@ -35,7 +36,7 @@ public class ChatbotController {
     @PostMapping("/summarize")
     public ResponseEntity<?> postSummarize(
             @RequestHeader("auth-user-id") Integer authUser,
-            @RequestBody Query query
+            @RequestBody @Valid Query query
     ) {
         Optional<Destination> result = service.summarizeDestination(query);
         if(result.isPresent()) return new ResponseEntity<>(result, HttpStatus.OK);

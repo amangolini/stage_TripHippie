@@ -1,5 +1,7 @@
-package com.triphippie.tripService.model;
+package com.triphippie.tripService.model.trip;
 
+import com.triphippie.tripService.model.Participation;
+import com.triphippie.tripService.model.journey.Journey;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,4 +34,7 @@ public class Trip {
 
     @OneToMany(mappedBy = "trip")
     private List<Journey> journeys;
+
+    @OneToMany(mappedBy = "trip")
+    private List<Participation> participations;
 }

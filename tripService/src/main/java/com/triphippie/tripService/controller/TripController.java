@@ -1,9 +1,10 @@
 package com.triphippie.tripService.controller;
 
-import com.triphippie.tripService.model.TripInDto;
-import com.triphippie.tripService.model.TripOutDto;
+import com.triphippie.tripService.model.trip.TripInDto;
+import com.triphippie.tripService.model.trip.TripOutDto;
 import com.triphippie.tripService.service.TripService;
 import com.triphippie.tripService.service.TripServiceException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class TripController {
     @PostMapping
     public ResponseEntity<?> postTrip(
             @RequestHeader("auth-user-id") Integer userId,
-            @RequestBody TripInDto tripInDto
+            @RequestBody @Valid TripInDto tripInDto
     ) {
         try{
             tripService.createTrip(userId, tripInDto);
@@ -67,7 +68,7 @@ public class TripController {
     public ResponseEntity<?> putTrip(
             @RequestHeader("auth-user-id") Integer userId,
             @PathVariable("tripId") Long id,
-            @RequestBody TripInDto tripInDto
+            @RequestBody @Valid TripInDto tripInDto
     ) {
         try {
             tripService.modifyTrip(userId, id, tripInDto);

@@ -1,4 +1,6 @@
 package com.triphippie.chatbotService.model;
 
-public record Query(String query) {
+import jakarta.validation.constraints.NotNull;
+
+public record Query(@NotNull String query) {
 }

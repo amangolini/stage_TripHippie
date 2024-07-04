@@ -1,4 +1,4 @@
-package com.triphippie.tripService.model;
+package com.triphippie.tripService.model.journey;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

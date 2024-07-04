@@ -1,8 +1,20 @@
 package com.triphippie.tripService.service;
 
-import com.triphippie.tripService.model.*;
+import com.triphippie.tripService.feign.UserServiceInterface;
+import com.triphippie.tripService.model.Participation;
+import com.triphippie.tripService.model.ParticipationDto;
+import com.triphippie.tripService.model.ParticipationId;
+import com.triphippie.tripService.model.journey.Journey;
+import com.triphippie.tripService.model.journey.JourneyInDto;
+import com.triphippie.tripService.model.journey.JourneyOutDto;
+import com.triphippie.tripService.model.journey.JourneyUpdate;
+import com.triphippie.tripService.model.trip.Trip;
+import com.triphippie.tripService.model.trip.TripInDto;
+import com.triphippie.tripService.model.trip.TripOutDto;
 import com.triphippie.tripService.repository.JourneyRepository;
+import com.triphippie.tripService.repository.ParticipationRepository;
 import com.triphippie.tripService.repository.TripRepository;
+import feign.FeignException;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,10 +32,20 @@ public class TripService {
     private TripRepository tripRepository;
     private JourneyRepository journeyRepository;
 
+    private ParticipationRepository participationRepository;
+    private UserServiceInterface userServiceInterface;
+
     @Autowired
-    public TripService(TripRepository tripRepository, JourneyRepository journeyRepository) {
+    public TripService(
+            TripRepository tripRepository,
+            JourneyRepository journeyRepository,
+            ParticipationRepository participationRepository,
+            UserServiceInterface userServiceInterface
+    ) {
         this.tripRepository = tripRepository;
         this.journeyRepository = journeyRepository;
+        this.participationRepository = participationRepository;
+        this.userServiceInterface = userServiceInterface;
     }
 
     private static TripOutDto mapToTripOut(Trip trip) {
@@ -53,6 +75,7 @@ public class TripService {
         return start.isBefore(end);
     }
 
+    //TRIP
     public void createTrip(Integer userId, TripInDto tripInDto) throws TripServiceException {
         if(!validateDates(tripInDto.getStartDate(), tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
         Trip trip = new Trip();
@@ -115,6 +138,7 @@ public class TripService {
         tripRepository.deleteById(id);
     }
 
+    //JOURNEY
     public void createJourney(Integer userId, JourneyInDto journeyInDto) throws TripServiceException {
         Optional<Trip> trip = tripRepository.findById(journeyInDto.getTripId());
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
@@ -161,5 +185,50 @@ public class TripService {
         if(journey.isEmpty()) return;
         if(!journey.get().getTrip().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
         journeyRepository.deleteById(id);
+    }
+
+    //PARTICIPATION
+    public void createParticipation(Integer userId, ParticipationDto inDto) throws TripServiceException {
+        if(userId.equals(inDto.getParticipantId())) return;
+        Optional<Trip> trip = tripRepository.findById(inDto.getTripId());
+        if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        if(!trip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+
+        try {
+            userServiceInterface.getUser(inDto.getParticipantId());
+        } catch (FeignException.FeignClientException.NotFound e) {
+            throw new TripServiceException(TripServiceError.NOT_FOUND);
+        }
+
+        Participation participation = new Participation();
+        participation.setParticipantId(inDto.getParticipantId());
+        participation.setTrip(trip.get());
+        participationRepository.save(participation);
+    }
+
+    public List<ParticipationDto> findParticipation(Long tripId) throws TripServiceException {
+        Optional<Trip> trip = tripRepository.findById(tripId);
+        if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+
+        List<Participation> participation = participationRepository.findByTrip(trip.get());
+        List<ParticipationDto> outParticipation = new ArrayList<>();
+        for (Participation p : participation) {
+            outParticipation.add(new ParticipationDto(p.getParticipantId(), p.getTrip().getId()));
+        }
+
+        return outParticipation;
+    }
+
+    public void deleteParticipation(Integer userId, ParticipationDto inDto) throws TripServiceException {
+        Optional<Trip> trip = tripRepository.findById(inDto.getTripId());
+        if(trip.isEmpty()) return;
+
+        ParticipationId id = new ParticipationId(inDto.getParticipantId(), trip.get());
+        Optional<Participation> participation = participationRepository.findById(id);
+        if(participation.isEmpty()) return;
+
+        if(!trip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+
+        participationRepository.deleteById(id);
     }
 }

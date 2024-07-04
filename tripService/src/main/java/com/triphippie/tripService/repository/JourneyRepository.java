@@ -1,7 +1,7 @@
 package com.triphippie.tripService.repository;
 
-import com.triphippie.tripService.model.Journey;
-import com.triphippie.tripService.model.Trip;
+import com.triphippie.tripService.model.journey.Journey;
+import com.triphippie.tripService.model.trip.Trip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,13 +1,13 @@
-package com.triphippie.tripService.model;
+package com.triphippie.tripService.model.journey;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
 @Data
 @NoArgsConstructor
 public class JourneyUpdate {
-    @NonNull private String destination;
+    @NotNull private String destination;
 
     private String description;
 }

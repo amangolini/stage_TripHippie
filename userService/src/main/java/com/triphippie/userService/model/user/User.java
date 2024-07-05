@@ -1,4 +1,4 @@
-package com.triphippie.userService.model;
+package com.triphippie.userService.model.user;
 
 import jakarta.persistence.*;
 import lombok.Data;

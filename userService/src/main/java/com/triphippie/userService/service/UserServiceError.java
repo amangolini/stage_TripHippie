@@ -1,8 +1,8 @@
 package com.triphippie.userService.service;
 
-public enum UserServiceResult {
-    SUCCESS,
+public enum UserServiceError {
     BAD_REQUEST,
     CONFLICT,
-    NOT_FOUND
+    NOT_FOUND,
+    FORBIDDEN
 }

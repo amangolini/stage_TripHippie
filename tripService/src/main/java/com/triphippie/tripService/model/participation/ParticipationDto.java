@@ -1,4 +1,4 @@
-package com.triphippie.tripService.model;
+package com.triphippie.tripService.model.participation;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

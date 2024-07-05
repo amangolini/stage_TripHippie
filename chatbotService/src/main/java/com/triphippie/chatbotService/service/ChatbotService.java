@@ -4,8 +4,6 @@ import com.triphippie.chatbotService.model.Destination;
 import com.triphippie.chatbotService.model.Query;
 import com.triphippie.chatbotService.model.Result;
 import dev.ai4j.openai4j.OpenAiHttpException;
-import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.model.openai.OpenAiChatModelName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

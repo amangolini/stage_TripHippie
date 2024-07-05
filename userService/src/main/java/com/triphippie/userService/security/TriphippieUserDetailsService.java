@@ -1,7 +1,7 @@
 package com.triphippie.userService.security;
 
-import com.triphippie.userService.model.Role;
-import com.triphippie.userService.model.User;
+import com.triphippie.userService.model.user.Role;
+import com.triphippie.userService.model.user.User;
 import com.triphippie.userService.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;

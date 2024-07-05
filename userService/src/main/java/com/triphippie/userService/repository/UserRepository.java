@@ -1,6 +1,6 @@
 package com.triphippie.userService.repository;
 
-import com.triphippie.userService.model.User;
+import com.triphippie.userService.model.user.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

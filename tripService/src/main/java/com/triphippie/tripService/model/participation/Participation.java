@@ -1,4 +1,4 @@
-package com.triphippie.tripService.model;
+package com.triphippie.tripService.model.participation;
 
 import com.triphippie.tripService.model.trip.Trip;
 import jakarta.persistence.*;

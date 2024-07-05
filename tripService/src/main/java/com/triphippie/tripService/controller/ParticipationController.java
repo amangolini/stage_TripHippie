@@ -1,7 +1,7 @@
 package com.triphippie.tripService.controller;
 
-import com.triphippie.tripService.model.ParticipationDto;
-import com.triphippie.tripService.service.TripService;
+import com.triphippie.tripService.model.participation.ParticipationDto;
+import com.triphippie.tripService.service.ParticipationService;
 import com.triphippie.tripService.service.TripServiceException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +14,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Controller
 @RequestMapping("api/participation")
 public class ParticipationController {
-
-    private TripService tripService;
+    private final ParticipationService participationService;
 
     @Autowired
-    public ParticipationController(TripService tripService) {
-        this.tripService = tripService;
+    public ParticipationController(ParticipationService participationService) {
+        this.participationService = participationService;
     }
 
     @PostMapping()
@@ -28,7 +27,7 @@ public class ParticipationController {
             @RequestBody @Valid ParticipationDto inDto
     ) {
         try {
-            tripService.createParticipation(userId, inDto);
+            participationService.createParticipation(userId, inDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -42,7 +41,7 @@ public class ParticipationController {
     @GetMapping()
     public ResponseEntity<?> getJourneys(@RequestParam("tripId") Long id) {
         try {
-            return new ResponseEntity<>(tripService.findParticipation(id), HttpStatus.OK);
+            return new ResponseEntity<>(participationService.findParticipation(id), HttpStatus.OK);
         } catch (TripServiceException e) {
             switch (e.getError()) {
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -57,7 +56,7 @@ public class ParticipationController {
             @RequestBody @Valid ParticipationDto inDto
     ) {
         try {
-            tripService.deleteParticipation(userId, inDto);
+            participationService.deleteParticipation(userId, inDto);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {

@@ -1,4 +1,4 @@
-package com.triphippie.userService.model;
+package com.triphippie.userService.model.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

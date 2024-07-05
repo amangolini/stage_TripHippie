@@ -2,7 +2,7 @@ package com.triphippie.tripService.controller;
 
 import com.triphippie.tripService.model.journey.JourneyInDto;
 import com.triphippie.tripService.model.journey.JourneyUpdate;
-import com.triphippie.tripService.service.TripService;
+import com.triphippie.tripService.service.JourneyService;
 import com.triphippie.tripService.service.TripServiceException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +15,11 @@ import org.springframework.web.server.ResponseStatusException;
 @Controller
 @RequestMapping("api/journeys")
 public class JourneyController {
-    private TripService tripService;
+    private final JourneyService journeyService;
 
     @Autowired
-    public JourneyController(TripService tripService) {
-        this.tripService = tripService;
+    public JourneyController(JourneyService journeyService) {
+        this.journeyService = journeyService;
     }
 
     @PostMapping()
@@ -28,7 +28,7 @@ public class JourneyController {
             @RequestBody @Valid JourneyInDto journeyInDto
     ) {
         try {
-            tripService.createJourney(userId, journeyInDto);
+            journeyService.createJourney(userId, journeyInDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -42,7 +42,7 @@ public class JourneyController {
     @GetMapping()
     public ResponseEntity<?> getJourneys(@RequestParam("tripId") Long id) {
         try {
-            return new ResponseEntity<>(tripService.findJourneys(id), HttpStatus.OK);
+            return new ResponseEntity<>(journeyService.findJourneys(id), HttpStatus.OK);
         } catch (TripServiceException e) {
             switch (e.getError()) {
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -54,7 +54,7 @@ public class JourneyController {
     @GetMapping("/{journeyId}")
     public ResponseEntity<?> getJourney(@PathVariable("journeyId") Long id) {
         try {
-            return new ResponseEntity<>(tripService.findJourneyById(id), HttpStatus.OK);
+            return new ResponseEntity<>(journeyService.findJourneyById(id), HttpStatus.OK);
         } catch (TripServiceException e) {
             switch (e.getError()) {
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -70,7 +70,7 @@ public class JourneyController {
             @RequestBody @Valid JourneyUpdate update
     ) {
         try {
-            tripService.modifyJourney(userId, id, update);
+            journeyService.modifyJourney(userId, id, update);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -87,7 +87,7 @@ public class JourneyController {
             @PathVariable("journeyId") Long id
     ) {
         try {
-            tripService.deleteJourney(userId, id);
+            journeyService.deleteJourney(userId, id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {

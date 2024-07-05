@@ -1,4 +1,4 @@
-package com.triphippie.userService.model;
+package com.triphippie.userService.model.auth;
 
 public record ValidateUserDto(
         Integer id,

@@ -1,14 +1,11 @@
 package com.triphippie.userService.service;
 
-import com.triphippie.userService.model.*;
+import com.triphippie.userService.model.user.Role;
+import com.triphippie.userService.model.user.User;
+import com.triphippie.userService.model.user.UserInDto;
+import com.triphippie.userService.model.user.UserOutDto;
 import com.triphippie.userService.repository.UserRepository;
-import com.triphippie.userService.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,22 +16,17 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class UserService {
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private AuthenticationManager authenticationManager;
-    private JwtService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtService jwtService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
     }
 
     private boolean isUsernamePresent(String username) {
@@ -54,8 +46,8 @@ public class UserService {
         );
     }
 
-    public UserServiceResult createUser(UserInDto userInDto) {
-        if(isUsernamePresent(userInDto.getUsername())) return UserServiceResult.CONFLICT;
+    public void createUser(UserInDto userInDto) throws UserServiceException {
+        if(isUsernamePresent(userInDto.getUsername())) throw new UserServiceException(UserServiceError.CONFLICT);
 
         User newUser = new User();
         newUser.setUsername(userInDto.getUsername());
@@ -69,7 +61,6 @@ public class UserService {
         newUser.setCity(userInDto.getCity());
 
         userRepository.save(newUser);
-        return UserServiceResult.SUCCESS;
     }
 
     public List<UserOutDto> findAllUsers(Integer size, Integer page) {
@@ -95,13 +86,15 @@ public class UserService {
         return user.map(UserService::mapToUserOut);
     }
 
-    public UserServiceResult updateUser(Integer id, UserInDto userInDto) {
+    public void updateUser(Integer principalId, Integer id, UserInDto userInDto) throws UserServiceException {
+        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
+
         Optional<User> oldUser = userRepository.findById(id);
-        if(oldUser.isEmpty()) return UserServiceResult.NOT_FOUND;
+        if(oldUser.isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
 
         User user = oldUser.get();
         if(isUsernamePresent(userInDto.getUsername()) && !userInDto.getUsername().equals(user.getUsername()))
-            return UserServiceResult.CONFLICT;
+            throw new UserServiceException(UserServiceError.CONFLICT);
 
         user.setUsername(userInDto.getUsername());
         user.setPassword(passwordEncoder.encode(userInDto.getPassword()));
@@ -113,26 +106,28 @@ public class UserService {
         user.setCity(userInDto.getCity());
 
         userRepository.save(user);
-        return UserServiceResult.SUCCESS;
     }
 
-    public void deleteUserById(Integer id) {
+    public void deleteUserById(Integer principalId, Integer id) throws UserServiceException {
+        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
+
         try {
-            deleteProfileImage(id);
+            deleteProfileImage(principalId, id);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         userRepository.deleteById(id);
     }
 
-    public UserServiceResult saveProfileImage(Integer id, MultipartFile image) throws IOException {
-        if(findUserById(id).isEmpty()) return UserServiceResult.NOT_FOUND;
+    public void saveProfileImage(Integer principalId, Integer id, MultipartFile image) throws IOException, UserServiceException {
+        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
+        if(findUserById(id).isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
+
         String filename = image.getOriginalFilename();
         String newFilename = id + "." + filename.substring(filename.lastIndexOf(".") + 1);
         String uploadPath = "src/main/resources/static/images/profileImages/" + newFilename;
         Files.copy(image.getInputStream(), Path.of(uploadPath), StandardCopyOption.REPLACE_EXISTING);
         userRepository.saveUserProfileImageUrl(id, newFilename);
-        return UserServiceResult.SUCCESS;
     }
 
     public Optional<byte[]> findProfileImage(Integer id) throws IOException {
@@ -149,10 +144,12 @@ public class UserService {
         }
     }
 
-    public UserServiceResult deleteProfileImage(Integer id) throws IOException {
+    public void deleteProfileImage(Integer principalId, Integer id) throws IOException, UserServiceException {
+        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
+
         Optional<String> filePath = userRepository.findUserProfileImageUrlById(id);
 
-        if(filePath.isEmpty()) return UserServiceResult.SUCCESS;
+        if(filePath.isEmpty()) return;
         Path imagePath = Path.of("src/main/resources/static/images/profileImages/" + filePath.get());
 
         if (Files.exists(imagePath)) {
@@ -160,27 +157,5 @@ public class UserService {
         }
 
         userRepository.deleteUserProfileImageUrl(id);
-        return UserServiceResult.SUCCESS;
-    }
-
-    /* SECURITY METHODS */
-    public String login(AuthDto authDto) {
-        Optional<User> user = userRepository.findByUsername(authDto.username());
-        if(user.isEmpty()) throw new UsernameNotFoundException("User not found");
-
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authDto.username(), authDto.password())
-        );
-        //SecurityContextHolder.getContext().setAuthentication(auth);
-
-        return "Bearer " + jwtService.generateToken(auth, Map.of("user-id", user.get().getId()));
-    }
-
-    public Optional<ValidateUserDto> validateToken(String token) {
-        String username = jwtService.validateToken(token);
-        Optional<User> user = userRepository.findByUsername(username);
-        return user.isPresent()
-                ? Optional.of(new ValidateUserDto(user.get().getId(), user.get().getRole().name()))
-                : Optional.empty();
     }
 }

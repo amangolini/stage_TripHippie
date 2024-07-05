@@ -1,4 +1,4 @@
-package com.triphippie.userService.model;
+package com.triphippie.userService.model.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;

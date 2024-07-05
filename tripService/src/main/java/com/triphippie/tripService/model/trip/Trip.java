@@ -1,6 +1,6 @@
 package com.triphippie.tripService.model.trip;
 
-import com.triphippie.tripService.model.Participation;
+import com.triphippie.tripService.model.participation.Participation;
 import com.triphippie.tripService.model.journey.Journey;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

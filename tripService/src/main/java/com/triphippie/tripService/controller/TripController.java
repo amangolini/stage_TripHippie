@@ -18,7 +18,7 @@ import java.util.Optional;
 @Controller
 @RequestMapping("api/trips")
 public class TripController {
-    private TripService tripService;
+    private final TripService tripService;
 
     @Autowired
     public TripController(TripService tripService) {
@@ -46,9 +46,16 @@ public class TripController {
             @RequestParam("tripsSize") int tripsSize,
             @RequestParam("page") int page,
             @RequestParam("startDate") Optional<LocalDate> startDate,
-            @RequestParam("endDate") Optional<LocalDate> endDate
+            @RequestParam("endDate") Optional<LocalDate> endDate,
+            @RequestParam("userId") Optional<Integer> userId
     ) {
-        return new ResponseEntity<>(tripService.findAllTrips(tripsSize, page, startDate.orElse(null), endDate.orElse(null)), HttpStatus.OK);
+        return new ResponseEntity<>(tripService.findAllTrips(
+                tripsSize,
+                page,
+                startDate.orElse(null),
+                endDate.orElse(null),
+                userId.orElse(null)
+        ),HttpStatus.OK);
     }
 
     @GetMapping("/completed")

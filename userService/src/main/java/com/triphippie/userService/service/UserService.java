@@ -1,9 +1,6 @@
 package com.triphippie.userService.service;
 
-import com.triphippie.userService.model.user.Role;
-import com.triphippie.userService.model.user.User;
-import com.triphippie.userService.model.user.UserInDto;
-import com.triphippie.userService.model.user.UserOutDto;
+import com.triphippie.userService.model.user.*;
 import com.triphippie.userService.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,7 +83,7 @@ public class UserService {
         return user.map(UserService::mapToUserOut);
     }
 
-    public void updateUser(Integer principalId, Integer id, UserInDto userInDto) throws UserServiceException {
+    public void replaceUser(Integer principalId, Integer id, UserInDto userInDto) throws UserServiceException {
         if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
 
         Optional<User> oldUser = userRepository.findById(id);
@@ -108,6 +105,30 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public void updateUser(Integer principalId, Integer id, UserPatchDto patchDto) throws UserServiceException {
+        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
+
+        Optional<User> oldUser = userRepository.findById(id);
+        if(oldUser.isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
+
+        User user = oldUser.get();
+
+        if(patchDto.getUsername() != null) {
+            if(isUsernamePresent(patchDto.getUsername()) && !patchDto.getUsername().equals(user.getUsername()))
+                throw new UserServiceException(UserServiceError.CONFLICT);
+            user.setUsername(patchDto.getUsername());
+        }
+        if(patchDto.getPassword() != null) user.setPassword(passwordEncoder.encode(patchDto.getPassword()));
+        if(patchDto.getFirstName() != null) user.setFirstName(patchDto.getFirstName());
+        if(patchDto.getLastName() != null) user.setLastName(patchDto.getLastName());
+        if(patchDto.getDateOfBirth() != null) user.setDateOfBirth(patchDto.getDateOfBirth());
+        if(patchDto.getEmail() != null) user.setEmail(patchDto.getEmail());
+        if(patchDto.getAbout() != null) user.setAbout(patchDto.getAbout());
+        if(patchDto.getCity() != null) user.setCity(patchDto.getCity());
+
+        userRepository.save(user);
+    }
+
     public void deleteUserById(Integer principalId, Integer id) throws UserServiceException {
         if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
 
@@ -120,9 +141,11 @@ public class UserService {
     }
 
     public void saveProfileImage(Integer principalId, Integer id, MultipartFile image) throws IOException, UserServiceException {
+        if(image.isEmpty()) throw new UserServiceException(UserServiceError.BAD_REQUEST);
         if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
         if(findUserById(id).isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
 
+        deleteProfileImage(principalId, id);
         String filename = image.getOriginalFilename();
         String newFilename = id + "." + filename.substring(filename.lastIndexOf(".") + 1);
         String uploadPath = "src/main/resources/static/images/profileImages/" + newFilename;

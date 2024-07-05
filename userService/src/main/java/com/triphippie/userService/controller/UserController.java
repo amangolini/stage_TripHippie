@@ -2,6 +2,7 @@ package com.triphippie.userService.controller;
 
 import com.triphippie.userService.model.user.UserInDto;
 import com.triphippie.userService.model.user.UserOutDto;
+import com.triphippie.userService.model.user.UserPatchDto;
 import com.triphippie.userService.service.UserService;
 import com.triphippie.userService.service.UserServiceException;
 import jakarta.validation.Valid;
@@ -69,6 +70,25 @@ public class UserController {
             @RequestBody @Valid UserInDto user
     ) {
         try {
+            userService.replaceUser(principal, id, user);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (UserServiceException ex) {
+            switch (ex.getError()) {
+                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+                case CONFLICT -> throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchUser(
+            @RequestHeader("auth-user-id") Integer principal,
+            @PathVariable("id") Integer id,
+            @RequestBody @Valid UserPatchDto user
+    ) {
+        try {
             userService.updateUser(principal, id, user);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (UserServiceException ex) {
@@ -125,6 +145,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (UserServiceException ex) {
             switch (ex.getError()) {
+                case BAD_REQUEST -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
                 case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
                 default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

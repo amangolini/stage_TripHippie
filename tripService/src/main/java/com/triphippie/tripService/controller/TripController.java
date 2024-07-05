@@ -2,6 +2,7 @@ package com.triphippie.tripService.controller;
 
 import com.triphippie.tripService.model.trip.TripInDto;
 import com.triphippie.tripService.model.trip.TripOutDto;
+import com.triphippie.tripService.model.trip.TripPatchDto;
 import com.triphippie.tripService.service.TripService;
 import com.triphippie.tripService.service.TripServiceException;
 import jakarta.validation.Valid;
@@ -78,7 +79,26 @@ public class TripController {
             @RequestBody @Valid TripInDto tripInDto
     ) {
         try {
-            tripService.modifyTrip(userId, id, tripInDto);
+            tripService.replaceTrip(userId, id, tripInDto);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (TripServiceException e) {
+            switch (e.getError()) {
+                case BAD_REQUEST -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+    }
+
+    @PatchMapping("/{tripId}")
+    public ResponseEntity<?> patchTrip(
+            @RequestHeader("auth-user-id") Integer userId,
+            @PathVariable("tripId") Long id,
+            @RequestBody @Valid TripPatchDto patchDto
+    ) {
+        try {
+            tripService.updateTrip(userId, id, patchDto);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {

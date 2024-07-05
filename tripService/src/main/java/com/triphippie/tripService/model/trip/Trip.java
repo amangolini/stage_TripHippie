@@ -32,9 +32,9 @@ public class Trip {
 
     private String description;
 
-    @OneToMany(mappedBy = "trip")
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.REMOVE)
     private List<Journey> journeys;
 
-    @OneToMany(mappedBy = "trip")
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.REMOVE)
     private List<Participation> participations;
 }

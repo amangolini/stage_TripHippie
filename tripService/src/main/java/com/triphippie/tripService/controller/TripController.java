@@ -28,7 +28,6 @@ public class TripController {
 
     @PostMapping
     public ResponseEntity<?> postTrip(
-            //@RequestHeader("auth-user-id") Integer userId,
             @RequestBody @Valid TripInDto tripInDto
     ) {
         try{
@@ -74,7 +73,6 @@ public class TripController {
 
     @PutMapping("/{tripId}")
     public ResponseEntity<?> putTrip(
-            //@RequestHeader("auth-user-id") Integer userId,
             @PathVariable("tripId") Long id,
             @RequestBody @Valid TripInDto tripInDto
     ) {
@@ -93,7 +91,6 @@ public class TripController {
 
     @PatchMapping("/{tripId}")
     public ResponseEntity<?> patchTrip(
-            //@RequestHeader("auth-user-id") Integer userId,
             @PathVariable("tripId") Long id,
             @RequestBody @Valid TripPatchDto patchDto
     ) {
@@ -112,7 +109,6 @@ public class TripController {
 
     @DeleteMapping("/{tripId}")
     public ResponseEntity<?> deleteTrip(
-            //@RequestHeader("auth-user-id") Integer userId,
             @PathVariable("tripId") Long id
     ) {
         try {

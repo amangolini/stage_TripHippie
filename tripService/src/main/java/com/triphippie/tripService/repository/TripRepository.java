@@ -1,6 +1,7 @@
 package com.triphippie.tripService.repository;
 
 import com.triphippie.tripService.model.trip.Trip;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     @Query("SELECT t FROM Trip t WHERE t.endDate < current_date")
     public List<Trip> findCompleted();
+
+    @Transactional
+    public void deleteByUserId(Integer userId);
 }

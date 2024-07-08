@@ -1,5 +1,6 @@
 package com.triphippie.userService.service;
 
+import com.triphippie.userService.feign.TripServiceInterface;
 import com.triphippie.userService.model.user.*;
 import com.triphippie.userService.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,17 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TripServiceInterface tripServiceInterface;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            TripServiceInterface tripServiceInterface
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tripServiceInterface = tripServiceInterface;
     }
 
     private boolean isUsernamePresent(String username) {
@@ -132,6 +139,7 @@ public class UserService {
             throw new RuntimeException(e);
         }
         userRepository.deleteById(id);
+        tripServiceInterface.deleteTripsByUser(id);
     }
 
     public void saveProfileImage(Integer id, MultipartFile image) throws IOException, UserServiceException {

@@ -28,6 +28,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET,"api/trips/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "api/journeys/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "api/participation/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "api/internal/trips/**").permitAll()
                                 .anyRequest().access((authentication, object) -> {
                                     if(authentication.get() instanceof TripServiceAuthentication)
                                         return new AuthorizationDecision(true);

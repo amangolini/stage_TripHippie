@@ -23,11 +23,10 @@ public class ParticipationController {
 
     @PostMapping()
     public ResponseEntity<?> postParticipation(
-            @RequestHeader("auth-user-id") Integer userId,
             @RequestBody @Valid ParticipationDto inDto
     ) {
         try {
-            participationService.createParticipation(userId, inDto);
+            participationService.createParticipation(inDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -52,11 +51,10 @@ public class ParticipationController {
 
     @DeleteMapping()
     public ResponseEntity<?> deleteJourney(
-            @RequestHeader("auth-user-id") Integer userId,
             @RequestBody @Valid ParticipationDto inDto
     ) {
         try {
-            participationService.deleteParticipation(userId, inDto);
+            participationService.deleteParticipation(inDto);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {

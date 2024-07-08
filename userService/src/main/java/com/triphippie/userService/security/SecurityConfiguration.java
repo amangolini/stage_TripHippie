@@ -1,11 +1,11 @@
 package com.triphippie.userService.security;
 
 import jakarta.servlet.DispatcherType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -60,11 +60,19 @@ public class SecurityConfiguration {
         http
                 .csrf((csrf) -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+                .addFilterBefore(new AuthFilter(), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests((authorizeHttpRequests) ->
                         authorizeHttpRequests
                                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                                .requestMatchers("api/users").permitAll()
-                                .requestMatchers("api/users/**").permitAll()
+                                .requestMatchers("api/users/login").permitAll()
+                                .requestMatchers("api/users/validateToken").permitAll()
+                                .requestMatchers(HttpMethod.POST,"api/users").permitAll()
+                                .requestMatchers(HttpMethod.GET, "api/users/**").permitAll()
+                                .anyRequest().access((authentication, object) -> {
+                                    if(authentication.get() instanceof UserServiceAuthentication)
+                                        return new AuthorizationDecision(true);
+                                    else return new AuthorizationDecision(false);
+                                })
                 );
 
         return http.build();

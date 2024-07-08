@@ -5,6 +5,7 @@ import com.triphippie.tripService.model.trip.TripInDto;
 import com.triphippie.tripService.model.trip.TripOutDto;
 import com.triphippie.tripService.model.trip.TripPatchDto;
 import com.triphippie.tripService.repository.TripRepository;
+import com.triphippie.tripService.security.PrincipalFacade;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,10 +21,12 @@ import java.util.Optional;
 @Service
 public class TripService {
     private final TripRepository tripRepository;
+    private final PrincipalFacade principalFacade;
 
     @Autowired
-    public TripService(TripRepository tripRepository) {
+    public TripService(TripRepository tripRepository, PrincipalFacade principalFacade) {
         this.tripRepository = tripRepository;
+        this.principalFacade = principalFacade;
     }
 
     private static TripOutDto mapToTripOut(Trip trip) {
@@ -41,12 +44,12 @@ public class TripService {
         return !start.isBefore(end);
     }
 
-    public void createTrip(Integer userId, TripInDto tripInDto) throws TripServiceException {
+    public void createTrip(TripInDto tripInDto) throws TripServiceException {
         if(invalidDates(tripInDto.getStartDate(), tripInDto.getEndDate()))
             throw new TripServiceException(TripServiceError.BAD_REQUEST);
 
         Trip trip = new Trip();
-        trip.setUserId(userId);
+        trip.setUserId(principalFacade.getPrincipal());
         trip.setStartDate(tripInDto.getStartDate());
         trip.setEndDate(tripInDto.getEndDate());
         trip.setPreferencies(tripInDto.getPreferences());
@@ -84,11 +87,12 @@ public class TripService {
         return trip.map(TripService::mapToTripOut);
     }
 
-    public void replaceTrip(Integer userId, Long id, TripInDto tripInDto) throws TripServiceException {
+    public void replaceTrip(Long id, TripInDto tripInDto) throws TripServiceException {
         if(invalidDates(tripInDto.getStartDate(), tripInDto.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);
         Optional<Trip> oldTrip = tripRepository.findById(id);
         if(oldTrip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
-        if(!oldTrip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        if(!oldTrip.get().getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
 
         Trip trip = oldTrip.get();
         trip.setStartDate(tripInDto.getStartDate());
@@ -99,10 +103,11 @@ public class TripService {
         tripRepository.save(trip);
     }
 
-    public void updateTrip(Integer userId, Long id, TripPatchDto patchDto) throws TripServiceException {
+    public void updateTrip(Long id, TripPatchDto patchDto) throws TripServiceException {
         Optional<Trip> oldTrip = tripRepository.findById(id);
         if(oldTrip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
-        if(!oldTrip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        if(!oldTrip.get().getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
 
         Trip trip = oldTrip.get();
         if(patchDto.getStartDate() != null) trip.setStartDate(patchDto.getStartDate());
@@ -115,10 +120,11 @@ public class TripService {
         tripRepository.save(trip);
     }
 
-    public void deleteTripById(Integer userId, Long id) throws TripServiceException {
+    public void deleteTripById(Long id) throws TripServiceException {
         Optional<Trip> oldTrip = tripRepository.findById(id);
         if(oldTrip.isEmpty()) return;
-        if(!oldTrip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        if(!oldTrip.get().getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
         tripRepository.deleteById(id);
     }
 }

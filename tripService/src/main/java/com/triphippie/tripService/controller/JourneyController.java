@@ -24,11 +24,10 @@ public class JourneyController {
 
     @PostMapping()
     public ResponseEntity<?> postJourney(
-            @RequestHeader("auth-user-id") Integer userId,
             @RequestBody @Valid JourneyInDto journeyInDto
     ) {
         try {
-            journeyService.createJourney(userId, journeyInDto);
+            journeyService.createJourney(journeyInDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -65,12 +64,11 @@ public class JourneyController {
 
     @PutMapping("/{journeyId}")
     public ResponseEntity<?> putJourney(
-            @RequestHeader("auth-user-id") Integer userId,
             @PathVariable("journeyId") Long id,
             @RequestBody @Valid JourneyUpdate update
     ) {
         try {
-            journeyService.modifyJourney(userId, id, update);
+            journeyService.modifyJourney(id, update);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -83,11 +81,10 @@ public class JourneyController {
 
     @DeleteMapping("/{journeyId}")
     public ResponseEntity<?> deleteJourney(
-            @RequestHeader("auth-user-id") Integer userId,
             @PathVariable("journeyId") Long id
     ) {
         try {
-            journeyService.deleteJourney(userId, id);
+            journeyService.deleteJourney(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {

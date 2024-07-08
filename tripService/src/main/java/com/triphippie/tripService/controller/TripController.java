@@ -28,11 +28,11 @@ public class TripController {
 
     @PostMapping
     public ResponseEntity<?> postTrip(
-            @RequestHeader("auth-user-id") Integer userId,
+            //@RequestHeader("auth-user-id") Integer userId,
             @RequestBody @Valid TripInDto tripInDto
     ) {
         try{
-            tripService.createTrip(userId, tripInDto);
+            tripService.createTrip(tripInDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -74,12 +74,12 @@ public class TripController {
 
     @PutMapping("/{tripId}")
     public ResponseEntity<?> putTrip(
-            @RequestHeader("auth-user-id") Integer userId,
+            //@RequestHeader("auth-user-id") Integer userId,
             @PathVariable("tripId") Long id,
             @RequestBody @Valid TripInDto tripInDto
     ) {
         try {
-            tripService.replaceTrip(userId, id, tripInDto);
+            tripService.replaceTrip(id, tripInDto);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -93,12 +93,12 @@ public class TripController {
 
     @PatchMapping("/{tripId}")
     public ResponseEntity<?> patchTrip(
-            @RequestHeader("auth-user-id") Integer userId,
+            //@RequestHeader("auth-user-id") Integer userId,
             @PathVariable("tripId") Long id,
             @RequestBody @Valid TripPatchDto patchDto
     ) {
         try {
-            tripService.updateTrip(userId, id, patchDto);
+            tripService.updateTrip(id, patchDto);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {
@@ -112,11 +112,11 @@ public class TripController {
 
     @DeleteMapping("/{tripId}")
     public ResponseEntity<?> deleteTrip(
-            @RequestHeader("auth-user-id") Integer userId,
+            //@RequestHeader("auth-user-id") Integer userId,
             @PathVariable("tripId") Long id
     ) {
         try {
-            tripService.deleteTripById(userId, id);
+            tripService.deleteTripById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (TripServiceException e) {
             switch (e.getError()) {

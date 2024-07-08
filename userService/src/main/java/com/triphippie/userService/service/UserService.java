@@ -83,9 +83,7 @@ public class UserService {
         return user.map(UserService::mapToUserOut);
     }
 
-    public void replaceUser(Integer principalId, Integer id, UserInDto userInDto) throws UserServiceException {
-        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
-
+    public void replaceUser(Integer id, UserInDto userInDto) throws UserServiceException {
         Optional<User> oldUser = userRepository.findById(id);
         if(oldUser.isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
 
@@ -105,9 +103,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void updateUser(Integer principalId, Integer id, UserPatchDto patchDto) throws UserServiceException {
-        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
-
+    public void updateUser(Integer id, UserPatchDto patchDto) throws UserServiceException {
         Optional<User> oldUser = userRepository.findById(id);
         if(oldUser.isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
 
@@ -129,23 +125,20 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void deleteUserById(Integer principalId, Integer id) throws UserServiceException {
-        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
-
+    public void deleteUserById(Integer id) {
         try {
-            deleteProfileImage(principalId, id);
+            deleteProfileImage(id);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         userRepository.deleteById(id);
     }
 
-    public void saveProfileImage(Integer principalId, Integer id, MultipartFile image) throws IOException, UserServiceException {
+    public void saveProfileImage(Integer id, MultipartFile image) throws IOException, UserServiceException {
         if(image.isEmpty()) throw new UserServiceException(UserServiceError.BAD_REQUEST);
-        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
         if(findUserById(id).isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
 
-        deleteProfileImage(principalId, id);
+        deleteProfileImage(id);
         String filename = image.getOriginalFilename();
         String newFilename = id + "." + filename.substring(filename.lastIndexOf(".") + 1);
         String uploadPath = "src/main/resources/static/images/profileImages/" + newFilename;
@@ -167,9 +160,7 @@ public class UserService {
         }
     }
 
-    public void deleteProfileImage(Integer principalId, Integer id) throws IOException, UserServiceException {
-        if(!principalId.equals(id)) throw new UserServiceException(UserServiceError.FORBIDDEN);
-
+    public void deleteProfileImage(Integer id) throws IOException {
         Optional<String> filePath = userRepository.findUserProfileImageUrlById(id);
 
         if(filePath.isEmpty()) return;

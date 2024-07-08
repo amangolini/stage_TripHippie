@@ -7,6 +7,7 @@ import com.triphippie.tripService.model.journey.JourneyUpdate;
 import com.triphippie.tripService.model.trip.Trip;
 import com.triphippie.tripService.repository.JourneyRepository;
 import com.triphippie.tripService.repository.TripRepository;
+import com.triphippie.tripService.security.PrincipalFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +19,13 @@ import java.util.Optional;
 public class JourneyService {
     private final TripRepository tripRepository;
     private final JourneyRepository journeyRepository;
+    private final PrincipalFacade principalFacade;
 
     @Autowired
-    public JourneyService(TripRepository tripRepository, JourneyRepository journeyRepository) {
+    public JourneyService(TripRepository tripRepository, JourneyRepository journeyRepository, PrincipalFacade principalFacade) {
         this.tripRepository = tripRepository;
         this.journeyRepository = journeyRepository;
+        this.principalFacade = principalFacade;
     }
 
     private static JourneyOutDto mapToJourneyOut(Journey journey) {
@@ -33,10 +36,11 @@ public class JourneyService {
         );
     }
 
-    public void createJourney(Integer userId, JourneyInDto journeyInDto) throws TripServiceException {
+    public void createJourney(JourneyInDto journeyInDto) throws TripServiceException {
         Optional<Trip> trip = tripRepository.findById(journeyInDto.getTripId());
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
-        if(!trip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        if(!trip.get().getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
 
         Journey journey = new Journey();
         journey.setTrip(trip.get());
@@ -64,20 +68,22 @@ public class JourneyService {
         return mapToJourneyOut(journey.get());
     }
 
-    public void modifyJourney(Integer userId, Long id, JourneyUpdate journeyUpdate) throws TripServiceException {
+    public void modifyJourney(Long id, JourneyUpdate journeyUpdate) throws TripServiceException {
         Optional<Journey> journey = journeyRepository.findById(id);
         if(journey.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
-        if(!journey.get().getTrip().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        if(!journey.get().getTrip().getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
 
         journey.get().setDestination(journeyUpdate.getDestination());
         journey.get().setDescription(journeyUpdate.getDescription());
         journeyRepository.save(journey.get());
     }
 
-    public void deleteJourney(Integer userId, Long id) throws TripServiceException {
+    public void deleteJourney(Long id) throws TripServiceException {
         Optional<Journey> journey = journeyRepository.findById(id);
         if(journey.isEmpty()) return;
-        if(!journey.get().getTrip().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        if(!journey.get().getTrip().getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
         journeyRepository.deleteById(id);
     }
 }

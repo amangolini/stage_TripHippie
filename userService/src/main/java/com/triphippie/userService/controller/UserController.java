@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +23,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("api/users")
+@EnableMethodSecurity
 public class UserController {
     private final UserService userService;
 
@@ -63,59 +66,48 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    //@PreAuthorize("#id == authentication.principal.id")
+    @PreAuthorize("#id == authentication.principal")
     public ResponseEntity<?> putUser(
-            @RequestHeader("auth-user-id") Integer principal,
             @PathVariable("id") Integer id,
             @RequestBody @Valid UserInDto user
     ) {
         try {
-            userService.replaceUser(principal, id, user);
+            userService.replaceUser(id, user);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (UserServiceException ex) {
             switch (ex.getError()) {
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
                 case CONFLICT -> throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
-                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
                 default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("#id == authentication.principal")
     public ResponseEntity<?> patchUser(
-            @RequestHeader("auth-user-id") Integer principal,
             @PathVariable("id") Integer id,
             @RequestBody @Valid UserPatchDto user
     ) {
         try {
-            userService.updateUser(principal, id, user);
+            userService.updateUser(id, user);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (UserServiceException ex) {
             switch (ex.getError()) {
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
                 case CONFLICT -> throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
-                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
                 default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
 
     @DeleteMapping("/{id}")
-    //@PreAuthorize("#id == authentication.principal.id")
+    @PreAuthorize("#id == authentication.principal")
     public ResponseEntity<?> deleteUser(
-            @RequestHeader("auth-user-id") Integer principal,
             @PathVariable("id") Integer id
     ) {
-        try {
-            userService.deleteUserById(principal, id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (UserServiceException ex) {
-            switch (ex.getError()) {
-                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
-                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
+        userService.deleteUserById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/{id}/profileImage")
@@ -132,21 +124,19 @@ public class UserController {
     }
 
     @PostMapping("/{id}/profileImage")
-    //@PreAuthorize("#id == authentication.principal.id")
+    @PreAuthorize("#id == authentication.principal")
     public ResponseEntity<?> postProfileImage(
-            @RequestHeader("auth-user-id") Integer principal,
             @PathVariable("id") Integer id,
             @RequestParam("profileImage") MultipartFile file
     ) {
         try {
-            userService.saveProfileImage(principal, id, file);
+            userService.saveProfileImage(id, file);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (UserServiceException ex) {
             switch (ex.getError()) {
                 case BAD_REQUEST -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
                 default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -154,21 +144,15 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/profileImage")
-    //@PreAuthorize("#id == authentication.principal.id")
+    @PreAuthorize("#id == authentication.principal")
     public ResponseEntity<?> deleteProfileImage(
-            @RequestHeader("auth-user-id") Integer principal,
             @PathVariable Integer id
     ) {
         try {
-            userService.deleteProfileImage(principal, id);
+            userService.deleteProfileImage(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch(IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (UserServiceException ex) {
-            switch (ex.getError()) {
-                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
-                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
         }
     }
 }

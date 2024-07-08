@@ -39,10 +39,10 @@ public class ParticipationService {
     public void createParticipation(ParticipationDto inDto) throws TripServiceException {
         Integer userId = principalFacade.getPrincipal();
 
-        if(userId.equals(inDto.getParticipantId())) return;
         Optional<Trip> trip = tripRepository.findById(inDto.getTripId());
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
         if(!trip.get().getUserId().equals(userId)) throw new TripServiceException(TripServiceError.FORBIDDEN);
+        if(userId.equals(inDto.getParticipantId())) return;
 
         try {
             userServiceInterface.getUser(inDto.getParticipantId());

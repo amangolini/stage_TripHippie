@@ -18,6 +18,7 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+    private static final List<String> SUPPORTED_MEDIA_TYPES = List.of("png");
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TripServiceInterface tripServiceInterface;
@@ -146,9 +147,12 @@ public class UserService {
         if(image.isEmpty()) throw new UserServiceException(UserServiceError.BAD_REQUEST);
         if(findUserById(id).isEmpty()) throw new UserServiceException(UserServiceError.NOT_FOUND);
 
-        deleteProfileImage(id);
         String filename = image.getOriginalFilename();
-        String newFilename = id + "." + filename.substring(filename.lastIndexOf(".") + 1);
+        String extension = filename.substring(filename.lastIndexOf(".") + 1);
+        if(!SUPPORTED_MEDIA_TYPES.contains(extension)) throw new UserServiceException(UserServiceError.UNSUPPORTED);
+
+        deleteProfileImage(id);
+        String newFilename = id + "." + extension;
         String uploadPath = "src/main/resources/static/images/profileImages/" + newFilename;
         Files.copy(image.getInputStream(), Path.of(uploadPath), StandardCopyOption.REPLACE_EXISTING);
         userRepository.saveUserProfileImageUrl(id, newFilename);

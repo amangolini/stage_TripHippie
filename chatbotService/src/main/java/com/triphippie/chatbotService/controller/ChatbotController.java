@@ -25,17 +25,15 @@ public class ChatbotController {
 
     @PostMapping("/query")
     public ResponseEntity<?> postQuery(
-            @RequestHeader("auth-user-id") Integer authUser,
             @RequestBody @Valid Query query
     ) {
-        Optional<Result> result = service.ask(query, authUser);
+        Optional<Result> result = service.ask(query);
         if(result.isPresent()) return new ResponseEntity<>(result, HttpStatus.OK);
         else throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @PostMapping("/summarize")
     public ResponseEntity<?> postSummarize(
-            @RequestHeader("auth-user-id") Integer authUser,
             @RequestBody @Valid Query query
     ) {
         Optional<Destination> result = service.summarizeDestination(query);

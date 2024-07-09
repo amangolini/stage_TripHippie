@@ -138,6 +138,7 @@ public class UserController {
             switch (ex.getError()) {
                 case BAD_REQUEST -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                case UNSUPPORTED -> throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
                 default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }

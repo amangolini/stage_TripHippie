@@ -1,5 +1,6 @@
 package com.triphippie.tripService.model.journey;
 
+import com.triphippie.tripService.model.destination.Destination;
 import com.triphippie.tripService.model.trip.Trip;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,11 @@ public class Journey {
     private Trip trip;
 
     @Column(nullable = false)
-    private String destination;
+    private Integer stepNumber;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "destination_id", nullable = false)
+    private Destination destination;
 
     private String description;
 }

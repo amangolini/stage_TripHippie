@@ -31,6 +31,7 @@ public class JourneyService {
     private static JourneyOutDto mapToJourneyOut(Journey journey) {
         return new JourneyOutDto(
                 journey.getId(),
+                journey.getStepNumber(),
                 journey.getDestination(),
                 journey.getDescription()
         );
@@ -44,6 +45,7 @@ public class JourneyService {
 
         Journey journey = new Journey();
         journey.setTrip(trip.get());
+        journey.setStepNumber(journeyInDto.getStepNumber());
         journey.setDestination(journeyInDto.getDestination());
         journey.setDescription(journeyInDto.getDescription());
         journeyRepository.save(journey);
@@ -53,7 +55,7 @@ public class JourneyService {
         Optional<Trip> trip = tripRepository.findById(tripId);
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
 
-        List<Journey> journeys = journeyRepository.findByTrip(trip.get());
+        List<Journey> journeys = journeyRepository.findByTripOrderByStepNumber(trip.get());
         List<JourneyOutDto> outJourneys = new ArrayList<>();
         for (Journey j : journeys) {
             outJourneys.add(mapToJourneyOut(j));
@@ -74,8 +76,10 @@ public class JourneyService {
         if(!journey.get().getTrip().getUserId().equals(principalFacade.getPrincipal()))
             throw new TripServiceException(TripServiceError.FORBIDDEN);
 
+        journey.get().setStepNumber(journeyUpdate.getStepNumber());
         journey.get().setDestination(journeyUpdate.getDestination());
         journey.get().setDescription(journeyUpdate.getDescription());
+
         journeyRepository.save(journey.get());
     }
 

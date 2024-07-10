@@ -1,5 +1,6 @@
 package com.triphippie.tripService.model.trip;
 
+import com.triphippie.tripService.model.destination.Destination;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -10,7 +11,13 @@ public class TripPatchDto {
 
     private LocalDate endDate;
 
-    private String preferences;
+    private TripVehicle vehicle;
+
+    private TripType type;
+
+    private Destination startDestination;
+
+    private Destination endDestination;
 
     private String description;
 }

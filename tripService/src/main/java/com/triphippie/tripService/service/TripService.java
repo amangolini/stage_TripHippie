@@ -35,7 +35,10 @@ public class TripService {
                 trip.getUserId(),
                 trip.getStartDate(),
                 trip.getEndDate(),
-                trip.getPreferencies(),
+                trip.getVehicle(),
+                trip.getType(),
+                trip.getStartDestination(),
+                trip.getEndDestination(),
                 trip.getDescription()
         );
     }
@@ -52,7 +55,10 @@ public class TripService {
         trip.setUserId(principalFacade.getPrincipal());
         trip.setStartDate(tripInDto.getStartDate());
         trip.setEndDate(tripInDto.getEndDate());
-        trip.setPreferencies(tripInDto.getPreferences());
+        trip.setVehicle(tripInDto.getVehicle());
+        trip.setType(tripInDto.getType());
+        trip.setStartDestination(tripInDto.getStartDestination());
+        trip.setEndDestination(tripInDto.getEndDestination());
         trip.setDescription(tripInDto.getDescription());
         tripRepository.save(trip);
     }
@@ -97,7 +103,10 @@ public class TripService {
         Trip trip = oldTrip.get();
         trip.setStartDate(tripInDto.getStartDate());
         trip.setEndDate(tripInDto.getEndDate());
-        trip.setPreferencies(tripInDto.getPreferences());
+        trip.setVehicle(tripInDto.getVehicle());
+        trip.setType(tripInDto.getType());
+        trip.setStartDestination(tripInDto.getStartDestination());
+        trip.setEndDestination(tripInDto.getEndDestination());
         trip.setDescription(tripInDto.getDescription());
 
         tripRepository.save(trip);
@@ -112,7 +121,10 @@ public class TripService {
         Trip trip = oldTrip.get();
         if(patchDto.getStartDate() != null) trip.setStartDate(patchDto.getStartDate());
         if(patchDto.getEndDate() != null) trip.setEndDate(patchDto.getEndDate());
-        if(patchDto.getPreferences() != null) trip.setPreferencies(patchDto.getPreferences());
+        if(patchDto.getVehicle() != null) trip.setVehicle(patchDto.getVehicle());
+        if(patchDto.getType() != null) trip.setType(patchDto.getType());
+        if(patchDto.getStartDestination() != null) trip.setStartDestination(patchDto.getStartDestination());
+        if(patchDto.getEndDestination() != null) trip.setEndDestination(patchDto.getEndDestination());
         if(patchDto.getDescription() != null) trip.setDescription(patchDto.getDescription());
 
         if(invalidDates(trip.getStartDate(), trip.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);

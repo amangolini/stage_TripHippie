@@ -1,8 +1,6 @@
 package com.triphippie.tripService.controller;
 
-import com.triphippie.tripService.model.trip.TripInDto;
-import com.triphippie.tripService.model.trip.TripOutDto;
-import com.triphippie.tripService.model.trip.TripPatchDto;
+import com.triphippie.tripService.model.trip.*;
 import com.triphippie.tripService.service.TripService;
 import com.triphippie.tripService.service.TripServiceException;
 import jakarta.validation.Valid;
@@ -120,5 +118,15 @@ public class TripController {
                 default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
+    }
+
+    @GetMapping("/vehicles")
+    public ResponseEntity<TripVehicle[]> getTripVehicles() {
+        return new ResponseEntity<>(TripVehicle.values(), HttpStatus.OK);
+    }
+
+    @GetMapping("/types")
+    public ResponseEntity<TripType[]> getTripTypes() {
+        return new ResponseEntity<>(TripType.values(), HttpStatus.OK);
     }
 }

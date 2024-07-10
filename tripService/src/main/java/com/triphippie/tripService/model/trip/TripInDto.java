@@ -1,5 +1,6 @@
 package com.triphippie.tripService.model.trip;
 
+import com.triphippie.tripService.model.destination.Destination;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -11,7 +12,13 @@ public class TripInDto {
 
     @NotNull private LocalDate endDate;
 
-    private String preferences;
+    @NotNull private TripVehicle vehicle;
+
+    @NotNull private TripType type;
+
+    @NotNull private Destination startDestination;
+
+    @NotNull private Destination endDestination;
 
     private String description;
 }

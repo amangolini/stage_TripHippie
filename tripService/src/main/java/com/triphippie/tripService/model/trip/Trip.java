@@ -1,5 +1,6 @@
 package com.triphippie.tripService.model.trip;
 
+import com.triphippie.tripService.model.destination.Destination;
 import com.triphippie.tripService.model.participation.Participation;
 import com.triphippie.tripService.model.journey.Journey;
 import jakarta.persistence.*;
@@ -28,7 +29,19 @@ public class Trip {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    private String preferencies;
+    @Column(nullable = false)
+    private TripVehicle vehicle;
+
+    @Column(nullable = false)
+    private TripType type;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "start_destination_id", nullable = false)
+    private Destination startDestination;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "end_destination_id", nullable = false)
+    private Destination endDestination;
 
     private String description;
 
@@ -36,5 +49,5 @@ public class Trip {
     private List<Journey> journeys;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.REMOVE)
-    private List<Participation> participations;
+    private List<Participation> participation;
 }

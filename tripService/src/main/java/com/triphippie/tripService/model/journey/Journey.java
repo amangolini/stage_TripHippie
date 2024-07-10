@@ -20,9 +20,6 @@ public class Journey {
     @JoinColumn(name="trip_id", nullable = false)
     private Trip trip;
 
-    @Column(nullable = false)
-    private Integer stepNumber;
-
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "destination_id", nullable = false)
     private Destination destination;

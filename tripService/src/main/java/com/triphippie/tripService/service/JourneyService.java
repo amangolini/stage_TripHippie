@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -31,31 +32,35 @@ public class JourneyService {
     private static JourneyOutDto mapToJourneyOut(Journey journey) {
         return new JourneyOutDto(
                 journey.getId(),
-                journey.getStepNumber(),
                 journey.getDestination(),
                 journey.getDescription()
         );
     }
 
     public void createJourney(JourneyInDto journeyInDto) throws TripServiceException {
-        Optional<Trip> trip = tripRepository.findById(journeyInDto.getTripId());
-        if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
-        if(!trip.get().getUserId().equals(principalFacade.getPrincipal()))
+        Optional<Trip> savedTrip = tripRepository.findById(journeyInDto.getTripId());
+        if(savedTrip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        if(!savedTrip.get().getUserId().equals(principalFacade.getPrincipal()))
             throw new TripServiceException(TripServiceError.FORBIDDEN);
 
         Journey journey = new Journey();
-        journey.setTrip(trip.get());
-        journey.setStepNumber(journeyInDto.getStepNumber());
+        Trip trip = savedTrip.get();
+
+        journey.setTrip(trip);
         journey.setDestination(journeyInDto.getDestination());
         journey.setDescription(journeyInDto.getDescription());
-        journeyRepository.save(journey);
+
+        if(trip.getJourneys().size() < journeyInDto.getStepNumber()) trip.getJourneys().add(journey);
+        else trip.getJourneys().add(journeyInDto.getStepNumber(), journey);
+
+        tripRepository.save(trip);
     }
 
     public List<JourneyOutDto> findJourneys(Long tripId) throws TripServiceException {
         Optional<Trip> trip = tripRepository.findById(tripId);
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
 
-        List<Journey> journeys = journeyRepository.findByTripOrderByStepNumber(trip.get());
+        List<Journey> journeys = journeyRepository.findByTrip(trip.get());
         List<JourneyOutDto> outJourneys = new ArrayList<>();
         for (Journey j : journeys) {
             outJourneys.add(mapToJourneyOut(j));
@@ -71,16 +76,20 @@ public class JourneyService {
     }
 
     public void modifyJourney(Long id, JourneyUpdate journeyUpdate) throws TripServiceException {
-        Optional<Journey> journey = journeyRepository.findById(id);
-        if(journey.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
-        if(!journey.get().getTrip().getUserId().equals(principalFacade.getPrincipal()))
+        Optional<Journey> savedJourney = journeyRepository.findById(id);
+        if(savedJourney.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
+        if(!savedJourney.get().getTrip().getUserId().equals(principalFacade.getPrincipal()))
             throw new TripServiceException(TripServiceError.FORBIDDEN);
 
-        journey.get().setStepNumber(journeyUpdate.getStepNumber());
-        journey.get().setDestination(journeyUpdate.getDestination());
-        journey.get().setDescription(journeyUpdate.getDescription());
+        Journey journey = savedJourney.get();
+        Trip trip = journey.getTrip();
+        int journeyPosition = trip.getJourneys().indexOf(journey);
 
-        journeyRepository.save(journey.get());
+        journey.setDestination(journeyUpdate.getDestination());
+        journey.setDescription(journeyUpdate.getDescription());
+        trip.getJourneys().add(journeyUpdate.getStepNumber(), trip.getJourneys().remove(journeyPosition));
+
+        tripRepository.save(trip);
     }
 
     public void deleteJourney(Long id) throws TripServiceException {
@@ -89,5 +98,9 @@ public class JourneyService {
         if(!journey.get().getTrip().getUserId().equals(principalFacade.getPrincipal()))
             throw new TripServiceException(TripServiceError.FORBIDDEN);
         journeyRepository.deleteById(id);
+
+        Trip trip = journey.get().getTrip();
+        trip.getJourneys().removeIf(Objects::isNull);
+        tripRepository.save(trip);
     }
 }

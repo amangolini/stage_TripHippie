@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface JourneyRepository extends JpaRepository<Journey, Long> {
-    public List<Journey> findByTripOrderByStepNumber(Trip trip);
+    public List<Journey> findByTrip(Trip trip);
 }

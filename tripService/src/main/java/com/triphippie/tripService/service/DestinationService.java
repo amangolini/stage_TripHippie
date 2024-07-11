@@ -15,8 +15,8 @@ public class DestinationService {
     public static Destination mapToDestination(DestinationDto dto) {
         Destination destination = new Destination();
         destination.setName(dto.getName());
-        destination.setLatitude(destination.getLatitude());
-        destination.setLongitude(destination.getLongitude());
+        destination.setLatitude(dto.getLatitude());
+        destination.setLongitude(dto.getLongitude());
         return destination;
     }
 }

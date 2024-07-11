@@ -1,5 +1,7 @@
 package com.triphippie.tripService.service;
 
+import com.triphippie.tripService.model.destination.Destination;
+import com.triphippie.tripService.model.destination.DestinationDto;
 import com.triphippie.tripService.model.trip.Trip;
 import com.triphippie.tripService.model.trip.TripInDto;
 import com.triphippie.tripService.model.trip.TripOutDto;
@@ -17,6 +19,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.triphippie.tripService.service.DestinationService.mapToDestination;
+import static com.triphippie.tripService.service.DestinationService.mapToDestinationOut;
 
 @Service
 public class TripService {
@@ -37,8 +42,8 @@ public class TripService {
                 trip.getEndDate(),
                 trip.getVehicle(),
                 trip.getType(),
-                trip.getStartDestination(),
-                trip.getEndDestination(),
+                mapToDestinationOut(trip.getStartDestination()),
+                mapToDestinationOut(trip.getEndDestination()),
                 trip.getDescription()
         );
     }
@@ -57,8 +62,8 @@ public class TripService {
         trip.setEndDate(tripInDto.getEndDate());
         trip.setVehicle(tripInDto.getVehicle());
         trip.setType(tripInDto.getType());
-        trip.setStartDestination(tripInDto.getStartDestination());
-        trip.setEndDestination(tripInDto.getEndDestination());
+        trip.setStartDestination(mapToDestination(tripInDto.getStartDestination()));
+        trip.setEndDestination(mapToDestination(tripInDto.getEndDestination()));
         trip.setDescription(tripInDto.getDescription());
         tripRepository.save(trip);
     }
@@ -105,8 +110,8 @@ public class TripService {
         trip.setEndDate(tripInDto.getEndDate());
         trip.setVehicle(tripInDto.getVehicle());
         trip.setType(tripInDto.getType());
-        trip.setStartDestination(tripInDto.getStartDestination());
-        trip.setEndDestination(tripInDto.getEndDestination());
+        trip.setStartDestination(mapToDestination(tripInDto.getStartDestination()));
+        trip.setEndDestination(mapToDestination(tripInDto.getEndDestination()));
         trip.setDescription(tripInDto.getDescription());
 
         tripRepository.save(trip);
@@ -123,8 +128,8 @@ public class TripService {
         if(patchDto.getEndDate() != null) trip.setEndDate(patchDto.getEndDate());
         if(patchDto.getVehicle() != null) trip.setVehicle(patchDto.getVehicle());
         if(patchDto.getType() != null) trip.setType(patchDto.getType());
-        if(patchDto.getStartDestination() != null) trip.setStartDestination(patchDto.getStartDestination());
-        if(patchDto.getEndDestination() != null) trip.setEndDestination(patchDto.getEndDestination());
+        if(patchDto.getStartDestination() != null) trip.setStartDestination(mapToDestination(patchDto.getStartDestination()));
+        if(patchDto.getEndDestination() != null) trip.setEndDestination(mapToDestination(patchDto.getEndDestination()));
         if(patchDto.getDescription() != null) trip.setDescription(patchDto.getDescription());
 
         if(invalidDates(trip.getStartDate(), trip.getEndDate())) throw new TripServiceException(TripServiceError.BAD_REQUEST);

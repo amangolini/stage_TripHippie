@@ -32,7 +32,7 @@ public class JourneyService {
     private static JourneyOutDto mapToJourneyOut(Journey journey) {
         return new JourneyOutDto(
                 journey.getId(),
-                journey.getDestination(),
+                DestinationService.mapToDestinationOut(journey.getDestination()),
                 journey.getDescription()
         );
     }
@@ -47,7 +47,7 @@ public class JourneyService {
         Trip trip = savedTrip.get();
 
         journey.setTrip(trip);
-        journey.setDestination(journeyInDto.getDestination());
+        journey.setDestination(DestinationService.mapToDestination(journeyInDto.getDestination()));
         journey.setDescription(journeyInDto.getDescription());
 
         if(trip.getJourneys().size() < journeyInDto.getStepNumber()) trip.getJourneys().add(journey);
@@ -85,7 +85,7 @@ public class JourneyService {
         Trip trip = journey.getTrip();
         int journeyPosition = trip.getJourneys().indexOf(journey);
 
-        journey.setDestination(journeyUpdate.getDestination());
+        journey.setDestination(DestinationService.mapToDestination(journeyUpdate.getDestination()));
         journey.setDescription(journeyUpdate.getDescription());
         trip.getJourneys().add(journeyUpdate.getStepNumber(), trip.getJourneys().remove(journeyPosition));
 

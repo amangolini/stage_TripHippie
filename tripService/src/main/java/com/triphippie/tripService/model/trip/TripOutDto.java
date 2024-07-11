@@ -1,6 +1,6 @@
 package com.triphippie.tripService.model.trip;
 
-import com.triphippie.tripService.model.destination.DestinationDto;
+import com.triphippie.tripService.model.destination.DestinationOutDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -21,9 +21,9 @@ public class TripOutDto {
 
     private TripType type;
 
-    private DestinationDto startDestination;
+    private DestinationOutDto startDestination;
 
-    private DestinationDto endDestination;
+    private DestinationOutDto endDestination;
 
     private String description;
 }

@@ -1,6 +1,6 @@
 package com.triphippie.tripService.model.trip;
 
-import com.triphippie.tripService.model.destination.DestinationDto;
+import com.triphippie.tripService.model.destination.DestinationInDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -16,9 +16,9 @@ public class TripInDto {
 
     @NotNull private TripType type;
 
-    @NotNull private DestinationDto startDestination;
+    @NotNull private DestinationInDto startDestination;
 
-    @NotNull private DestinationDto endDestination;
+    @NotNull private DestinationInDto endDestination;
 
     private String description;
 }

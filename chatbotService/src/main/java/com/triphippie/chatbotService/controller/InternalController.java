@@ -1,35 +1,35 @@
 package com.triphippie.chatbotService.controller;
 
+import com.triphippie.chatbotService.model.Destination;
 import com.triphippie.chatbotService.model.Query;
-import com.triphippie.chatbotService.model.Result;
-import com.triphippie.chatbotService.service.ChatbotService;
+import com.triphippie.chatbotService.service.InternalService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
-@RestController
-@RequestMapping("api/chatbot")
-public class ChatbotController {
-    private final ChatbotService service;
+@Controller
+@RequestMapping("api/internal/chatbot")
+public class InternalController {
+    private final InternalService service;
 
     @Autowired
-    public ChatbotController(ChatbotService service) {
+    public InternalController(InternalService service) {
         this.service = service;
     }
 
-    @PostMapping("/query")
-    public ResponseEntity<?> postQuery(
+    @PostMapping("/summarize")
+    public ResponseEntity<?> postSummarize(
             @RequestBody @Valid Query query
     ) {
-        Optional<Result> result = service.ask(query);
+        Optional<Destination> result = service.summarizeDestination(query);
         if(result.isPresent()) return new ResponseEntity<>(result, HttpStatus.OK);
         else throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
     }

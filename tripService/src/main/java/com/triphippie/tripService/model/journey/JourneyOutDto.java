@@ -1,6 +1,6 @@
 package com.triphippie.tripService.model.journey;
 
-import com.triphippie.tripService.model.destination.DestinationDto;
+import com.triphippie.tripService.model.destination.DestinationOutDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -9,7 +9,7 @@ import lombok.Data;
 public class JourneyOutDto {
     private Long id;
 
-    private DestinationDto destination;
+    private DestinationOutDto destination;
 
     private String description;
 }

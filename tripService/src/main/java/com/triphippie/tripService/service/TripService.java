@@ -1,7 +1,5 @@
 package com.triphippie.tripService.service;
 
-import com.triphippie.tripService.model.destination.Destination;
-import com.triphippie.tripService.model.destination.DestinationDto;
 import com.triphippie.tripService.model.trip.Trip;
 import com.triphippie.tripService.model.trip.TripInDto;
 import com.triphippie.tripService.model.trip.TripOutDto;

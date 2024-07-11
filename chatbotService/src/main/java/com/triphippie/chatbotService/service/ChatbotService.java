@@ -1,6 +1,5 @@
 package com.triphippie.chatbotService.service;
 
-import com.triphippie.chatbotService.model.Destination;
 import com.triphippie.chatbotService.model.Query;
 import com.triphippie.chatbotService.model.Result;
 import com.triphippie.chatbotService.security.PrincipalFacade;
@@ -25,16 +24,6 @@ public class ChatbotService {
         try {
             Result result = new Result(assistant.chat(principalFacade.getPrincipal(), query.query()));
             return Optional.of(result);
-
-        } catch (OpenAiHttpException e) {
-            return Optional.empty();
-        }
-    }
-
-    public Optional<Destination> summarizeDestination(Query destination) {
-        try {
-            Destination info = assistant.summarizeDestination(destination.query());
-            return Optional.of(info);
 
         } catch (OpenAiHttpException e) {
             return Optional.empty();

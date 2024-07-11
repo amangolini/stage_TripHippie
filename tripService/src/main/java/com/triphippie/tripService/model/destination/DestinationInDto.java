@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class DestinationDto {
+public class DestinationInDto {
     @NotNull private String name;
 
     @NotNull private double latitude;

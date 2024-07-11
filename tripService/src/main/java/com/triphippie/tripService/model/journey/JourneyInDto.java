@@ -1,6 +1,6 @@
 package com.triphippie.tripService.model.journey;
 
-import com.triphippie.tripService.model.destination.DestinationDto;
+import com.triphippie.tripService.model.destination.DestinationInDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -10,7 +10,7 @@ public class JourneyInDto {
 
     @NotNull private Integer stepNumber;
 
-    @NotNull private DestinationDto destination;
+    @NotNull private DestinationInDto destination;
 
     private String description;
 }

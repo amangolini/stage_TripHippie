@@ -6,11 +6,17 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModelName;
 import dev.langchain4j.service.AiServices;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ChatbotConfig {
+    @Value("${langchain4j.open-ai.chat-model.api-key}")
+    private String apiKey;
+
+    @Value("${langchain4j.open-ai.chat-model.model-name}")
+    private String modelName;
 
     @Bean
     public Assistant assistant() {
@@ -23,8 +29,8 @@ public class ChatbotConfig {
     @Bean
     public ChatLanguageModel model() {
         return OpenAiChatModel.builder()
-                .apiKey("demo")
-                .modelName(OpenAiChatModelName.GPT_3_5_TURBO)
+                .apiKey(apiKey)
+                .modelName(modelName)
                 .build();
     }
 }

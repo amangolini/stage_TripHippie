@@ -1,9 +1,7 @@
 package com.triphippie.tripService.service;
 
-import com.triphippie.tripService.model.trip.Trip;
-import com.triphippie.tripService.model.trip.TripInDto;
-import com.triphippie.tripService.model.trip.TripOutDto;
-import com.triphippie.tripService.model.trip.TripPatchDto;
+import com.triphippie.tripService.model.journey.Journey;
+import com.triphippie.tripService.model.trip.*;
 import com.triphippie.tripService.repository.TripRepository;
 import com.triphippie.tripService.security.PrincipalFacade;
 import jakarta.annotation.Nullable;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -141,5 +140,22 @@ public class TripService {
         if(!oldTrip.get().getUserId().equals(principalFacade.getPrincipal()))
             throw new TripServiceException(TripServiceError.FORBIDDEN);
         tripRepository.deleteById(id);
+    }
+
+    public void orderJourneys(Long tripId, List<Long> order) throws TripServiceException {
+        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new TripServiceException(TripServiceError.NOT_FOUND));
+        if(!trip.getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
+
+        List<Journey> oldJourneys = trip.getJourneys();
+        Journey[] newJourneys = new Journey[oldJourneys.size()];
+        for(Journey j : oldJourneys) {
+            int newIndex = order.indexOf(j.getId());
+            if (newIndex == -1) throw new TripServiceException(TripServiceError.BAD_REQUEST);
+            newJourneys[newIndex] = j;
+        }
+
+        trip.setJourneys(new ArrayList<>(Arrays.stream(newJourneys).toList()));
+        tripRepository.save(trip);
     }
 }

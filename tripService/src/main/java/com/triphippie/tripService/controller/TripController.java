@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -128,5 +129,23 @@ public class TripController {
     @GetMapping("/types")
     public ResponseEntity<TripType[]> getTripTypes() {
         return new ResponseEntity<>(TripType.values(), HttpStatus.OK);
+    }
+
+    @PostMapping("/{tripId}/orderJourneys")
+    public ResponseEntity<?> postOrderJourneys(
+            @PathVariable("tripId") Long id,
+            @RequestBody List<Long> order
+    ) {
+        try {
+            tripService.orderJourneys(id, order);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (TripServiceException e) {
+            switch (e.getError()) {
+                case BAD_REQUEST -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                case FORBIDDEN -> throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Write access forbidden");
+                default -> throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
     }
 }

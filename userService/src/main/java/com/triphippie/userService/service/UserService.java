@@ -3,9 +3,11 @@ package com.triphippie.userService.service;
 import com.triphippie.userService.feign.TripServiceInterface;
 import com.triphippie.userService.model.user.*;
 import com.triphippie.userService.repository.UserRepository;
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -133,12 +135,14 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUserById(Integer id) {
         try {
             deleteProfileImage(id);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         userRepository.deleteById(id);
         tripServiceInterface.deleteTripsByUser(id);
     }

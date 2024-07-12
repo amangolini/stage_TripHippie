@@ -50,8 +50,7 @@ public class JourneyService {
         journey.setDestination(DestinationService.mapToDestination(journeyInDto.getDestination()));
         journey.setDescription(journeyInDto.getDescription());
 
-        if(trip.getJourneys().size() < journeyInDto.getStepNumber()) trip.getJourneys().add(journey);
-        else trip.getJourneys().add(journeyInDto.getStepNumber(), journey);
+        trip.getJourneys().add(journey);
 
         tripRepository.save(trip);
     }
@@ -60,7 +59,7 @@ public class JourneyService {
         Optional<Trip> trip = tripRepository.findById(tripId);
         if(trip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
 
-        List<Journey> journeys = journeyRepository.findByTrip(trip.get());
+        List<Journey> journeys = trip.get().getJourneys();
         List<JourneyOutDto> outJourneys = new ArrayList<>();
         for (Journey j : journeys) {
             outJourneys.add(mapToJourneyOut(j));
@@ -87,7 +86,9 @@ public class JourneyService {
 
         journey.setDestination(DestinationService.mapToDestination(journeyUpdate.getDestination()));
         journey.setDescription(journeyUpdate.getDescription());
-        trip.getJourneys().add(journeyUpdate.getStepNumber(), trip.getJourneys().remove(journeyPosition));
+
+        trip.getJourneys().remove(journeyPosition);
+        trip.getJourneys().add(journeyPosition, journey);
 
         tripRepository.save(trip);
     }

@@ -45,8 +45,9 @@ public class Trip {
 
     private String description;
 
-    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     @OrderColumn(name = "step_number")
+    @JoinColumn(name="trip_id", nullable = false)
     private List<Journey> journeys;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.REMOVE)

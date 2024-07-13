@@ -8,8 +8,6 @@ import lombok.Data;
 public class JourneyInDto {
     @NotNull private Long tripId;
 
-    @NotNull private Integer stepNumber;
-
     @NotNull private DestinationInDto destination;
 
     private String description;

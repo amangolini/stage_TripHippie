@@ -17,7 +17,7 @@ public class Journey {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="trip_id", nullable = false)
+    @JoinColumn(name="trip_id", insertable=false, updatable=false, nullable = false)
     private Trip trip;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class JourneyUpdate {
-    @NotNull private Integer stepNumber;
-
     @NotNull private DestinationInDto destination;
 
     private String description;

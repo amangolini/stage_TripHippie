@@ -1,9 +1,7 @@
 package com.triphippie.tripService.service;
 
-import com.triphippie.tripService.model.trip.Trip;
-import com.triphippie.tripService.model.trip.TripInDto;
-import com.triphippie.tripService.model.trip.TripOutDto;
-import com.triphippie.tripService.model.trip.TripPatchDto;
+import com.triphippie.tripService.model.journey.Journey;
+import com.triphippie.tripService.model.trip.*;
 import com.triphippie.tripService.repository.TripRepository;
 import com.triphippie.tripService.security.PrincipalFacade;
 import jakarta.annotation.Nullable;
@@ -14,9 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.triphippie.tripService.service.DestinationService.mapToDestination;
 import static com.triphippie.tripService.service.DestinationService.mapToDestinationOut;
@@ -141,5 +137,32 @@ public class TripService {
         if(!oldTrip.get().getUserId().equals(principalFacade.getPrincipal()))
             throw new TripServiceException(TripServiceError.FORBIDDEN);
         tripRepository.deleteById(id);
+    }
+
+    public void orderJourneys(Long tripId, List<Long> order) throws TripServiceException {
+        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new TripServiceException(TripServiceError.NOT_FOUND));
+        if(!trip.getUserId().equals(principalFacade.getPrincipal()))
+            throw new TripServiceException(TripServiceError.FORBIDDEN);
+
+        Set<Long> orderSet = new HashSet<>(order);
+        if(order.size() != trip.getJourneys().size() || orderSet.size() != order.size())
+            throw new TripServiceException(TripServiceError.BAD_REQUEST);
+
+        List<Journey> oldJourneys = trip.getJourneys();
+        List<Journey> newJourneys = new ArrayList<>(oldJourneys.size());
+
+        Map<Long, Journey> hashMap = new HashMap<>();
+        for(Journey j : oldJourneys) {
+            hashMap.put(j.getId(), j);
+        }
+
+        for (Long id : order) {
+            Journey movingJourney = hashMap.get(id);
+            if(movingJourney == null) throw new TripServiceException(TripServiceError.BAD_REQUEST);
+            newJourneys.add(movingJourney);
+        }
+
+        trip.setJourneys(newJourneys);
+        tripRepository.save(trip);
     }
 }

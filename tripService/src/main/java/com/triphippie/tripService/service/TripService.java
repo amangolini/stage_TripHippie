@@ -12,10 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.triphippie.tripService.service.DestinationService.mapToDestination;
 import static com.triphippie.tripService.service.DestinationService.mapToDestinationOut;
@@ -147,15 +144,25 @@ public class TripService {
         if(!trip.getUserId().equals(principalFacade.getPrincipal()))
             throw new TripServiceException(TripServiceError.FORBIDDEN);
 
+        Set<Long> orderSet = new HashSet<>(order);
+        if(order.size() != trip.getJourneys().size() || orderSet.size() != order.size())
+            throw new TripServiceException(TripServiceError.BAD_REQUEST);
+
         List<Journey> oldJourneys = trip.getJourneys();
-        Journey[] newJourneys = new Journey[oldJourneys.size()];
+        List<Journey> newJourneys = new ArrayList<>(oldJourneys.size());
+
+        Map<Long, Journey> hashMap = new HashMap<>();
         for(Journey j : oldJourneys) {
-            int newIndex = order.indexOf(j.getId());
-            if (newIndex == -1) throw new TripServiceException(TripServiceError.BAD_REQUEST);
-            newJourneys[newIndex] = j;
+            hashMap.put(j.getId(), j);
         }
 
-        trip.setJourneys(new ArrayList<>(Arrays.stream(newJourneys).toList()));
+        for (Long id : order) {
+            Journey movingJourney = hashMap.get(id);
+            if(movingJourney == null) throw new TripServiceException(TripServiceError.BAD_REQUEST);
+            newJourneys.add(movingJourney);
+        }
+
+        trip.setJourneys(newJourneys);
         tripRepository.save(trip);
     }
 }

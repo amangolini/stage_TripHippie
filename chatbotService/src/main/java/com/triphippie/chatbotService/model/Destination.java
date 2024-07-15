@@ -1,6 +1,6 @@
 package com.triphippie.chatbotService.model;
 
-import jdk.jfr.Description;
+import dev.langchain4j.model.output.structured.Description;
 import lombok.Data;
 
 import java.util.List;

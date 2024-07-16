@@ -165,4 +165,8 @@ public class TripService {
         trip.setJourneys(newJourneys);
         tripRepository.save(trip);
     }
+
+    public long countTrips() {
+        return tripRepository.count();
+    }
 }

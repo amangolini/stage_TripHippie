@@ -148,4 +148,9 @@ public class TripController {
             }
         }
     }
+
+    @GetMapping("/total")
+    public ResponseEntity<Long> getTotalTrips() {
+        return new ResponseEntity<>(tripService.countTrips(), HttpStatus.OK);
+    }
 }

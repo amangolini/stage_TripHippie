@@ -26,4 +26,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
     @Transactional
     public void deleteByUserId(Integer userId);
+
+    public long count();
 }

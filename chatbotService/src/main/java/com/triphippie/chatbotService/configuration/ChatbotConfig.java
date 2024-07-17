@@ -71,8 +71,9 @@ public class ChatbotConfig {
 
             private final PromptTemplate PROMPT_TEMPLATE = PromptTemplate.from(
                     """
-                            Would you be able to reply to the question '{{it}}' with a complete answer? 
-                            Answer ONLY with 'yes', 'no' or 'maybe'
+                            Do you have enough info to reply to the following query with a complete answer? 
+                            Answer ONLY with 'yes', 'no' or 'maybe'.
+                            Query: '{{it}}'
                             """
             );
 

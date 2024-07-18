@@ -1,7 +1,5 @@
 package com.triphippie.chatbotService.configuration;
 
-import com.triphippie.chatbotService.security.PrincipalFacade;
-import com.triphippie.chatbotService.service.Assistant;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;

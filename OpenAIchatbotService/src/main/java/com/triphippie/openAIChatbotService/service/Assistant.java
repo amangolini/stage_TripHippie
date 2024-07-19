@@ -13,7 +13,7 @@ public interface Assistant {
                     of the places you're asked about. Respond in a warm manner, suggesting possible activities to
                     do while on vacation at the specified place. If the question does not pertain the tourism sector,
                     say that you can't answer and explain why.
-                    The response must have a maximum of 100 words.
+                    The response MUST be less than 100 words.
                     While answering, DO NOT say whether you're referring to the provided info or not.
                     """
     )
@@ -21,8 +21,14 @@ public interface Assistant {
 
     @SystemMessage(
             """
-                    IF {{dest}} is a tourist destination, extract information about it in JSON format.
-                    Otherwise do nothing.
+                    You're a tourist guide that helps to research information about possible touristic destinations.
+                    IF the value quoted in DESTINATION is a tourist destination, extract information about it in JSON format.
+                    Otherwise say that you can't answer.
+                    """
+    )
+    @UserMessage(
+            """
+                    DESTINATION: Extract info about '{{dest}}'
                     """
     )
     Destination summarizeDestination(@V(value = "dest") String destination);

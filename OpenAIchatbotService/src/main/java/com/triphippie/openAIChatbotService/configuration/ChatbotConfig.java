@@ -70,7 +70,7 @@ public class ChatbotConfig {
 
             private final PromptTemplate PROMPT_TEMPLATE = PromptTemplate.from(
                     """
-                            Do you have enough info to reply to the following query with a complete answer? 
+                            Do you have enough knowledge to elaborate the following query further? 
                             Answer ONLY with 'yes' or 'no'.
                             Query: '{{it}}'
                             """
@@ -78,19 +78,16 @@ public class ChatbotConfig {
 
             @Override
             public Collection<ContentRetriever> route(Query query) {
-
                 Prompt prompt = PROMPT_TEMPLATE.apply(query.text());
-
-                System.out.println(prompt);
 
                 AiMessage aiMessage = model().generate(prompt.toUserMessage()).content();
                 System.out.println("LLM decided: " + aiMessage.text());
 
-                if (!aiMessage.text().toLowerCase().contains("no")) {
-                    return emptyList();
+                if (aiMessage.text().toLowerCase().contains("no")) {
+                    return singletonList(contentRetriever());
                 }
 
-                return singletonList(contentRetriever());
+                return emptyList();
             }
         };
     }

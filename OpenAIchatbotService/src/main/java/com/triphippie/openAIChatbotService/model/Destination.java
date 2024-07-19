@@ -1,4 +1,4 @@
-package com.triphippie.ollamaChatbotService.model;
+package com.triphippie.openAIChatbotService.model;
 
 import dev.langchain4j.model.output.structured.Description;
 import lombok.Data;

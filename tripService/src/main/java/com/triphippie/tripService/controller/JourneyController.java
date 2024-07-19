@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
+
 @Controller
 @RequestMapping("api/journeys")
 public class JourneyController {
@@ -27,8 +29,8 @@ public class JourneyController {
             @RequestBody @Valid JourneyInDto journeyInDto
     ) {
         try {
-            journeyService.createJourney(journeyInDto);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Long journeyId = journeyService.createJourney(journeyInDto);
+            return new ResponseEntity<>(Map.of("journeyId", journeyId), HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
                 case NOT_FOUND -> throw new ResponseStatusException(HttpStatus.NOT_FOUND);

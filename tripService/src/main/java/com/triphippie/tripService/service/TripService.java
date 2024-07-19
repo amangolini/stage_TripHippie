@@ -46,7 +46,7 @@ public class TripService {
         return !start.isBefore(end);
     }
 
-    public void createTrip(TripInDto tripInDto) throws TripServiceException {
+    public Long createTrip(TripInDto tripInDto) throws TripServiceException {
         if(invalidDates(tripInDto.getStartDate(), tripInDto.getEndDate()))
             throw new TripServiceException(TripServiceError.BAD_REQUEST);
 
@@ -59,7 +59,9 @@ public class TripService {
         trip.setStartDestination(mapToDestination(tripInDto.getStartDestination()));
         trip.setEndDestination(mapToDestination(tripInDto.getEndDestination()));
         trip.setDescription(tripInDto.getDescription());
-        tripRepository.save(trip);
+
+        Trip savedTrip = tripRepository.save(trip);
+        return savedTrip.getId();
     }
 
     public List<TripOutDto> findAllTrips(

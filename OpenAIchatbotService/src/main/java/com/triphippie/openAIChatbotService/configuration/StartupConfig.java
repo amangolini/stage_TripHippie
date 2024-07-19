@@ -1,13 +1,14 @@
-package com.triphippie.ollamaChatbotService.configuration;
+package com.triphippie.openAIChatbotService.configuration;
 
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
 import dev.langchain4j.data.document.parser.TextDocumentParser;
-import dev.langchain4j.data.document.splitter.DocumentBySentenceSplitter;
+import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.model.openai.OpenAiTokenizer;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ public class StartupConfig {
                 new TextDocumentParser()
         );
 
-        DocumentSplitter splitter = new DocumentBySentenceSplitter(100, 10);//DocumentSplitters.recursive(100, 10);
+        DocumentSplitter splitter = DocumentSplitters.recursive(100, 10, new OpenAiTokenizer());
         List<TextSegment> segments = splitter.splitAll(documents);
         List<Embedding> embeddings = embeddingModel.embedAll(segments).content();
         embeddingStore.addAll(embeddings, segments);

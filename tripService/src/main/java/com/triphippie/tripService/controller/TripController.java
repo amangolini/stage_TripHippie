@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -30,8 +31,8 @@ public class TripController {
             @RequestBody @Valid TripInDto tripInDto
     ) {
         try{
-            tripService.createTrip(tripInDto);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Long tripId = tripService.createTrip(tripInDto);
+            return new ResponseEntity<>(Map.of("tripId", tripId), HttpStatus.CREATED);
         } catch (TripServiceException e) {
             switch (e.getError()) {
                 case BAD_REQUEST -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);

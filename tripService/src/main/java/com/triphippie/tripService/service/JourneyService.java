@@ -37,7 +37,7 @@ public class JourneyService {
         );
     }
 
-    public void createJourney(JourneyInDto journeyInDto) throws TripServiceException {
+    public Long createJourney(JourneyInDto journeyInDto) throws TripServiceException {
         Optional<Trip> savedTrip = tripRepository.findById(journeyInDto.getTripId());
         if(savedTrip.isEmpty()) throw new TripServiceException(TripServiceError.NOT_FOUND);
         if(!savedTrip.get().getUserId().equals(principalFacade.getPrincipal()))
@@ -52,7 +52,8 @@ public class JourneyService {
 
         trip.getJourneys().add(journey);
 
-        tripRepository.save(trip);
+        Trip newTrip = tripRepository.save(trip);
+        return newTrip.getJourneys().get(newTrip.getJourneys().size() - 1).getId();
     }
 
     public List<JourneyOutDto> findJourneys(Long tripId) throws TripServiceException {

@@ -1,10 +1,9 @@
-package com.triphippie.ollamaChatbotService.service;
+package com.triphippie.openAIChatbotService.service;
 
-import com.triphippie.ollamaChatbotService.model.Query;
-import com.triphippie.ollamaChatbotService.model.Result;
-import com.triphippie.ollamaChatbotService.security.PrincipalFacade;
-import dev.langchain4j.data.message.TextContent;
-import dev.langchain4j.data.message.UserMessage;
+import com.triphippie.openAIChatbotService.model.Query;
+import com.triphippie.openAIChatbotService.model.Result;
+import com.triphippie.openAIChatbotService.security.PrincipalFacade;
+import dev.ai4j.openai4j.OpenAiHttpException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,11 +28,13 @@ public class ChatbotService {
     }
 
     public Optional<Result> ask(Query query) {
-        UserMessage message = UserMessage.from(
-                TextContent.from(query.query())
-        );
-        Result result = new Result(assistant.chat(principalFacade.getPrincipal(), message));
-        return Optional.of(result);
+        try {
+            Result result = new Result(assistant.chat(principalFacade.getPrincipal(), query.query()));
+            return Optional.of(result);
+
+        } catch (OpenAiHttpException e) {
+            return Optional.empty();
+        }
     }
 
     public void uploadDocument(MultipartFile file) throws ChatbotServiceException, IOException {

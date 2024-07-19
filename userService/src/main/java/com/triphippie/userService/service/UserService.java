@@ -53,7 +53,7 @@ public class UserService {
         );
     }
 
-    public void createUser(UserInDto userInDto) throws UserServiceException {
+    public Integer createUser(UserInDto userInDto) throws UserServiceException {
         if(isUsernamePresent(userInDto.getUsername())) throw new UserServiceException(UserServiceError.CONFLICT);
 
         User newUser = new User();
@@ -67,7 +67,8 @@ public class UserService {
         newUser.setAbout(userInDto.getAbout());
         newUser.setCity(userInDto.getCity());
 
-        userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
+        return savedUser.getId();
     }
 
     public List<UserOutDto> findAllUsers(Integer size, Integer page) {

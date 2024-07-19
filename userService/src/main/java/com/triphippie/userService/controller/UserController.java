@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -36,8 +37,8 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> postUser(@RequestBody @Valid UserInDto user) {
         try {
-            userService.createUser(user);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Integer userId = userService.createUser(user);
+            return new ResponseEntity<>(Map.of("userId", userId), HttpStatus.CREATED);
         } catch (UserServiceException ex) {
             switch (ex.getError()) {
                 case CONFLICT -> throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");

@@ -1,8 +1,8 @@
-package com.triphippie.ollamaChatbotService.controller;
+package com.triphippie.openAIChatbotService.controller;
 
-import com.triphippie.ollamaChatbotService.model.Destination;
-import com.triphippie.ollamaChatbotService.model.Query;
-import com.triphippie.ollamaChatbotService.service.InternalService;
+import com.triphippie.openAIChatbotService.model.Destination;
+import com.triphippie.openAIChatbotService.model.Query;
+import com.triphippie.openAIChatbotService.service.InternalService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

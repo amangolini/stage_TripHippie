@@ -1,9 +1,9 @@
-package com.triphippie.ollamaChatbotService.controller;
+package com.triphippie.openAIChatbotService.controller;
 
-import com.triphippie.ollamaChatbotService.model.Query;
-import com.triphippie.ollamaChatbotService.model.Result;
-import com.triphippie.ollamaChatbotService.service.ChatbotService;
-import com.triphippie.ollamaChatbotService.service.ChatbotServiceException;
+import com.triphippie.openAIChatbotService.model.Query;
+import com.triphippie.openAIChatbotService.model.Result;
+import com.triphippie.openAIChatbotService.service.ChatbotService;
+import com.triphippie.openAIChatbotService.service.ChatbotServiceException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

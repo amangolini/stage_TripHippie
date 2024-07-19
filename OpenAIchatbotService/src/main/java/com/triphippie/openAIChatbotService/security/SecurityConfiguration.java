@@ -1,4 +1,4 @@
-package com.triphippie.ollamaChatbotService.security;
+package com.triphippie.openAIChatbotService.security;
 
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;

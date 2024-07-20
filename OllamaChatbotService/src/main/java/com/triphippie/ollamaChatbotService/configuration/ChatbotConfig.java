@@ -1,10 +1,6 @@
 package com.triphippie.ollamaChatbotService.configuration;
 
-import com.triphippie.ollamaChatbotService.model.Conversation;
-import com.triphippie.ollamaChatbotService.repository.ConversationRepository;
-import com.triphippie.ollamaChatbotService.security.PrincipalFacade;
 import com.triphippie.ollamaChatbotService.service.Assistant;
-import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatLanguageModel;
@@ -29,8 +25,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -88,23 +82,26 @@ public class ChatbotConfig {
                     """
                             Do you have enough info to reply to the following query with a complete answer? 
                             Answer ONLY with 'yes' or 'no'. 
-                            Query: '{{query}}'. Context: {{context}}.
+                            Query: '{{it}}'.
                             """
             );
 
             @Autowired
             private UserContext userContext;
 
+            private final RAGAssistant ragAssistant = AiServices.builder(RAGAssistant.class)
+                    .chatLanguageModel(model())
+                    .chatMemoryProvider(id -> MessageWindowChatMemory.withMaxMessages(10))
+                    .build();
+
             @Override
             public Collection<ContentRetriever> route(Query query) {
-                Prompt prompt = (userContext.getContext() != null)
-                        ? PROMPT_TEMPLATE.apply(Map.of("query", query.text(), "context", userContext.getContext()))
-                        : PROMPT_TEMPLATE.apply(Map.of("query", query.text(), "context", "none"));
+                Prompt prompt = PROMPT_TEMPLATE.apply(query.text());
 
-                AiMessage aiMessage = model().generate(prompt.toUserMessage()).content();
-                System.out.println("LLM decided: " + aiMessage.text());
+                String aiMessage = ragAssistant.chat(userContext.getUser(), prompt.text());
+                System.out.println("LLM decided: " + aiMessage);
 
-                if (aiMessage.text().toLowerCase().contains("no")) {
+                if (aiMessage.toLowerCase().contains("no")) {
                     return singletonList(contentRetriever());
                 }
 
@@ -128,6 +125,4 @@ public class ChatbotConfig {
                 .retrievalAugmentor(retrievalAugmentor())
                 .build();
     }
-
-
 }

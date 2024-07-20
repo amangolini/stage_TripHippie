@@ -6,5 +6,5 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 public class UserContext {
-    private String context;
+    private Integer user;
 }

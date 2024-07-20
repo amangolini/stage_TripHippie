@@ -1,5 +1,8 @@
 package com.triphippie.ollamaChatbotService.configuration;
 
+import com.triphippie.ollamaChatbotService.model.Conversation;
+import com.triphippie.ollamaChatbotService.repository.ConversationRepository;
+import com.triphippie.ollamaChatbotService.security.PrincipalFacade;
 import com.triphippie.ollamaChatbotService.service.Assistant;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.segment.TextSegment;
@@ -19,12 +22,15 @@ import dev.langchain4j.rag.query.router.QueryRouter;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -78,23 +84,27 @@ public class ChatbotConfig {
     @Bean
     public QueryRouter queryRouter() {
         return new QueryRouter() {
-
             private final PromptTemplate PROMPT_TEMPLATE = PromptTemplate.from(
                     """
                             Do you have enough info to reply to the following query with a complete answer? 
                             Answer ONLY with 'yes' or 'no'. 
-                            Query: '{{it}}'
+                            Query: '{{query}}'. Context: {{context}}.
                             """
             );
 
+            @Autowired
+            private UserContext userContext;
+
             @Override
             public Collection<ContentRetriever> route(Query query) {
-                Prompt prompt = PROMPT_TEMPLATE.apply(query.text());
+                Prompt prompt = (userContext.getContext() != null)
+                        ? PROMPT_TEMPLATE.apply(Map.of("query", query.text(), "context", userContext.getContext()))
+                        : PROMPT_TEMPLATE.apply(Map.of("query", query.text(), "context", "none"));
 
                 AiMessage aiMessage = model().generate(prompt.toUserMessage()).content();
                 System.out.println("LLM decided: " + aiMessage.text());
 
-                if (!aiMessage.text().toLowerCase().contains("yes")) {
+                if (aiMessage.text().toLowerCase().contains("no")) {
                     return singletonList(contentRetriever());
                 }
 
@@ -118,4 +128,6 @@ public class ChatbotConfig {
                 .retrievalAugmentor(retrievalAugmentor())
                 .build();
     }
+
+
 }

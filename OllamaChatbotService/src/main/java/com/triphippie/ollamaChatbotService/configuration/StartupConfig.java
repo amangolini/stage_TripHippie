@@ -8,6 +8,7 @@ import dev.langchain4j.data.document.splitter.DocumentBySentenceSplitter;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
+import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,5 +41,6 @@ public class StartupConfig {
         List<TextSegment> segments = splitter.splitAll(documents);
         List<Embedding> embeddings = embeddingModel.embedAll(segments).content();
         embeddingStore.addAll(embeddings, segments);
+        //System.out.println(embeddingStore.search(new EmbeddingSearchRequest(embeddingModel.embed("touristic attractions Bagnolo").content(), 2, 0.7, null)).matches());
     }
 }

@@ -1,7 +1,10 @@
 package com.triphippie.ollamaChatbotService.service;
 
+import com.triphippie.ollamaChatbotService.configuration.UserContext;
+import com.triphippie.ollamaChatbotService.model.Conversation;
 import com.triphippie.ollamaChatbotService.model.Query;
 import com.triphippie.ollamaChatbotService.model.Result;
+import com.triphippie.ollamaChatbotService.repository.ConversationRepository;
 import com.triphippie.ollamaChatbotService.security.PrincipalFacade;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
@@ -21,18 +24,43 @@ public class ChatbotService {
     private static final List<String> SUPPORTED_MEDIA_TYPES = List.of("txt");
     private final PrincipalFacade principalFacade;
     private final Assistant assistant;
+    private final ConversationRepository conversationRepository;
 
     @Autowired
-    public ChatbotService(PrincipalFacade principalFacade, Assistant assistant) {
+    private UserContext userContext;
+
+    @Autowired
+    public ChatbotService(
+            PrincipalFacade principalFacade,
+            Assistant assistant,
+            ConversationRepository conversationRepository
+    ) {
         this.principalFacade = principalFacade;
         this.assistant = assistant;
+        this.conversationRepository = conversationRepository;
     }
 
     public Optional<Result> ask(Query query) {
+        Integer principal = principalFacade.getPrincipal();
+
+        Optional<Conversation> conversation = conversationRepository.findById(principal);
+        userContext.setContext(conversation.map(Conversation::getContext).orElse(null));
+
         UserMessage message = UserMessage.from(
-                TextContent.from(query.query())
+                TextContent.from(query.query() +
+                        ". IF you were talking about a place," +
+                        " at the end write the place of which you're talking about inside square brackets," +
+                        " OTHERWISE at the end write '[none]'"
+                )
         );
-        Result result = new Result(assistant.chat(principalFacade.getPrincipal(), message));
+
+        String chat = assistant.chat(principal, message);
+        String context = chat.substring(chat.indexOf("[") + 1, chat.indexOf("]"));
+        conversationRepository.save(new Conversation(principal, context));
+
+        userContext.setContext(null);
+
+        Result result = new Result(chat.substring(0, chat.indexOf("[")).stripTrailing());
         return Optional.of(result);
     }
 

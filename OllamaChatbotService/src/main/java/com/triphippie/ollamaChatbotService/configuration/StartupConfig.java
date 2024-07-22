@@ -37,10 +37,9 @@ public class StartupConfig {
                 new TextDocumentParser()
         );
 
-        DocumentSplitter splitter = new DocumentBySentenceSplitter(100, 10);//DocumentSplitters.recursive(100, 10);
+        DocumentSplitter splitter = new DocumentBySentenceSplitter(200, 20);//DocumentSplitters.recursive(100, 10);
         List<TextSegment> segments = splitter.splitAll(documents);
         List<Embedding> embeddings = embeddingModel.embedAll(segments).content();
         embeddingStore.addAll(embeddings, segments);
-        //System.out.println(embeddingStore.search(new EmbeddingSearchRequest(embeddingModel.embed("touristic attractions Bagnolo").content(), 2, 0.7, null)).matches());
     }
 }

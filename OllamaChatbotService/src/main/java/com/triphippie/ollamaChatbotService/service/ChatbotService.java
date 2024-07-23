@@ -1,17 +1,10 @@
 package com.triphippie.ollamaChatbotService.service;
 
-import com.triphippie.ollamaChatbotService.configuration.UserContext;
 import com.triphippie.ollamaChatbotService.model.Query;
 import com.triphippie.ollamaChatbotService.model.Result;
 import com.triphippie.ollamaChatbotService.security.PrincipalFacade;
-import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.store.embedding.EmbeddingMatch;
-import dev.langchain4j.store.embedding.EmbeddingSearchRequest;
-import dev.langchain4j.store.embedding.EmbeddingStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,30 +21,24 @@ public class ChatbotService {
     private static final List<String> SUPPORTED_MEDIA_TYPES = List.of("txt");
     private final PrincipalFacade principalFacade;
     private final Assistant assistant;
-    private final UserContext userContext;
 
     @Autowired
     public ChatbotService(
             PrincipalFacade principalFacade,
-            Assistant assistant,
-            UserContext userContext
+            Assistant assistant
     ) {
         this.principalFacade = principalFacade;
         this.assistant = assistant;
-        this.userContext = userContext;
     }
 
     public Optional<Result> ask(Query query) {
         Integer principal = principalFacade.getPrincipal();
-
-        userContext.setUser(principal);
 
         UserMessage message = UserMessage.from(
                 TextContent.from(query.query())
         );
 
         Result result = new Result(assistant.chat(principal, message));
-        userContext.setUser(null);
 
         return Optional.of(result);
     }

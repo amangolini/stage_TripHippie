@@ -88,26 +88,18 @@ public class ChatbotConfig {
         return new QueryRouter() {
             private final PromptTemplate PROMPT_TEMPLATE = PromptTemplate.from(
                     """
-                            Do you have enough knowledge to elaborate the following query further? 
+                            Do you have enough info to reply to the following query with a complete answer? 
                             Answer ONLY with 'yes' or 'no'. 
                             Query: '{{it}}'.
                             """
             );
-
-            @Autowired
-            private UserContext userContext;
-
-            private final RAGAssistant ragAssistant = AiServices.builder(RAGAssistant.class)
-                    .chatLanguageModel(model())
-                    .chatMemoryProvider(id -> MessageWindowChatMemory.withMaxMessages(10))
-                    .build();
 
             @Override
             public Collection<ContentRetriever> route(Query query) {
                 Prompt prompt = PROMPT_TEMPLATE.apply(query.text());
                 System.out.println(prompt.text());
 
-                String aiMessage = ragAssistant.chat(userContext.getUser(), prompt.text());
+                String aiMessage = model().generate(prompt.text());
                 System.out.println("LLM decided: " + aiMessage);
 
                 if (aiMessage.toLowerCase().contains("no")) {

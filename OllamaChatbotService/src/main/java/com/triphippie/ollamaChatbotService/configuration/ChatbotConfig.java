@@ -22,14 +22,21 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
+import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -51,18 +58,27 @@ public class ChatbotConfig {
     @Value("${langchain4j.compression-model.model-name}")
     private String compressionModelName;
 
+    private static final String dbPath = "src/main/resources/static/embedding.store";
+
     @Bean
     public ChatLanguageModel model() {
         return OllamaChatModel.builder()
                 .modelName(modelName)
                 .baseUrl(url)
-                .timeout(Duration.ofMinutes(10))
+                .timeout(Duration.ofMinutes(15))
                 .build();
     }
 
     @Bean
     public EmbeddingStore<TextSegment> embeddingStore() {
-        return new InMemoryEmbeddingStore<>();
+        if((new File(dbPath)).isFile()) return InMemoryEmbeddingStore.fromFile(dbPath);
+        else return new InMemoryEmbeddingStore<>();
+    }
+
+    @EventListener(ContextClosedEvent.class)
+    private void persistEmbeddingStore() {
+        InMemoryEmbeddingStore<TextSegment> db = (InMemoryEmbeddingStore<TextSegment>)embeddingStore();
+        db.serializeToFile(dbPath);
     }
 
     @Bean
@@ -104,7 +120,7 @@ public class ChatbotConfig {
 
                 if (aiMessage.toLowerCase().contains("no")) {
 
-                    //
+                    // Printing out score for testing
                     Embedding queryEmbedding = embeddingModel().embed(query.text()).content();
                     List<EmbeddingMatch<TextSegment>> relevant = embeddingStore().findRelevant(queryEmbedding, 3);
 

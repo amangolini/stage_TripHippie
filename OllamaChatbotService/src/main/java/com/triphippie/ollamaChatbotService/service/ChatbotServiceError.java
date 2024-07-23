@@ -2,5 +2,7 @@ package com.triphippie.ollamaChatbotService.service;
 
 public enum ChatbotServiceError {
     BAD_REQUEST,
-    UNSUPPORTED
+    UNSUPPORTED,
+    FORBIDDEN,
+    NOT_FOUND
 }

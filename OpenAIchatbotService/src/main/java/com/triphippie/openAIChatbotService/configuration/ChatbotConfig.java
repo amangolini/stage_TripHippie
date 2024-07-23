@@ -16,13 +16,18 @@ import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.rag.query.Query;
 import dev.langchain4j.rag.query.router.QueryRouter;
+import dev.langchain4j.rag.query.transformer.CompressingQueryTransformer;
+import dev.langchain4j.rag.query.transformer.QueryTransformer;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
 
+import java.io.File;
 import java.util.Collection;
 
 import static java.util.Collections.emptyList;
@@ -36,6 +41,8 @@ public class ChatbotConfig {
     @Value("${langchain4j.open-ai.chat-model.model-name}")
     private String modelName;
 
+    private static final String dbPath = "src/main/resources/static/embedding.store";
+
     @Bean
     public ChatLanguageModel model() {
         return OpenAiChatModel.builder()
@@ -46,7 +53,14 @@ public class ChatbotConfig {
 
     @Bean
     public EmbeddingStore<TextSegment> embeddingStore() {
-        return new InMemoryEmbeddingStore<>();
+        if((new File(dbPath)).isFile()) return InMemoryEmbeddingStore.fromFile(dbPath);
+        else return new InMemoryEmbeddingStore<>();
+    }
+
+    @EventListener(ContextClosedEvent.class)
+    private void persistEmbeddingStore() {
+        InMemoryEmbeddingStore<TextSegment> db = (InMemoryEmbeddingStore<TextSegment>)embeddingStore();
+        db.serializeToFile(dbPath);
     }
 
     @Bean
@@ -59,8 +73,8 @@ public class ChatbotConfig {
         return EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore())
                 .embeddingModel(embeddingModel())
-                .maxResults(2)
-                .minScore(0.75)
+                .maxResults(3)
+                .minScore(0.6)
                 .build();
     }
 
@@ -93,9 +107,15 @@ public class ChatbotConfig {
     }
 
     @Bean
+    public QueryTransformer queryTransformer() {
+        return new CompressingQueryTransformer(model());
+    }
+
+    @Bean
     public RetrievalAugmentor retrievalAugmentor() {
         return DefaultRetrievalAugmentor.builder()
                 .queryRouter(queryRouter())
+                .queryTransformer(queryTransformer())
                 .build();
     }
 

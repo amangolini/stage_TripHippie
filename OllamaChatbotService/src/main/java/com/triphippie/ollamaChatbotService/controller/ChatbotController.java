@@ -79,4 +79,18 @@ public class ChatbotController {
             }
         }
     }
+
+    // VISION
+    @PostMapping("/guessDestination")
+    public ResponseEntity<?> guessDestination(
+            @RequestParam("file") MultipartFile picture
+    ) {
+        try {
+            Optional<Result> result = service.spotDestination(picture);
+            if(result.isPresent()) return new ResponseEntity<>(result, HttpStatus.OK);
+            else throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

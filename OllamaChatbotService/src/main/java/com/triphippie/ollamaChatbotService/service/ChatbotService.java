@@ -5,6 +5,7 @@ import com.triphippie.ollamaChatbotService.model.RAGDocument;
 import com.triphippie.ollamaChatbotService.model.Result;
 import com.triphippie.ollamaChatbotService.repository.RAGDocumentRepository;
 import com.triphippie.ollamaChatbotService.security.PrincipalFacade;
+import com.triphippie.ollamaChatbotService.vision.VisionLanguageModel;
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;
@@ -16,18 +17,17 @@ import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
-import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +37,7 @@ public class ChatbotService {
     private static final String DOCUMENTS_PATH = "src/main/resources/static/documents/";
     private final PrincipalFacade principalFacade;
     private final Assistant assistant;
+    private final VisionLanguageModel visionLanguageModel;
     private final RAGDocumentRepository ragDocumentRepository;
     private final EmbeddingStore<TextSegment> embeddingStore;
     private final EmbeddingModel embeddingModel;
@@ -45,12 +46,14 @@ public class ChatbotService {
     public ChatbotService(
             PrincipalFacade principalFacade,
             Assistant assistant,
+            VisionLanguageModel visionLanguageModel,
             RAGDocumentRepository ragDocumentRepository,
             EmbeddingStore<TextSegment> embeddingStore,
             EmbeddingModel embeddingModel
     ) {
         this.principalFacade = principalFacade;
         this.assistant = assistant;
+        this.visionLanguageModel = visionLanguageModel;
         this.ragDocumentRepository = ragDocumentRepository;
         this.embeddingStore = embeddingStore;
         this.embeddingModel = embeddingModel;
@@ -138,5 +141,14 @@ public class ChatbotService {
         if (Files.exists(Path.of(filePath))) {
             Files.delete(Path.of(filePath));
         }
+    }
+
+    public Optional<Result> spotDestination (MultipartFile picture) throws IOException {
+        String response = visionLanguageModel.generate(
+                "Guess the tourist destination (city or at least country) where the given picture was taken. Answer with ONLY the name.",
+                List.of(Base64.getEncoder().encodeToString(picture.getBytes()))
+        );
+
+        return Optional.of(new Result(response));
     }
 }

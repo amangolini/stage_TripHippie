@@ -1,6 +1,8 @@
 package com.triphippie.ollamaChatbotService.configuration;
 
 import com.triphippie.ollamaChatbotService.service.Assistant;
+import com.triphippie.ollamaChatbotService.vision.OllamaVisionLanguageModel;
+import com.triphippie.ollamaChatbotService.vision.VisionLanguageModel;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -22,8 +24,6 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,12 +31,9 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -67,6 +64,14 @@ public class ChatbotConfig {
                 .baseUrl(url)
                 .timeout(Duration.ofMinutes(15))
                 .build();
+    }
+
+    @Bean
+    public VisionLanguageModel visionModel() {
+        return new OllamaVisionLanguageModel(
+                url,
+                visionModelName
+        );
     }
 
     @Bean

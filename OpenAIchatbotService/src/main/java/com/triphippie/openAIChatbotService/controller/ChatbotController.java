@@ -51,6 +51,11 @@ public class ChatbotController {
         }
     }
 
+    @GetMapping(value = "/documents")
+    public ResponseEntity<?> getDocument() {
+        return new ResponseEntity<>(service.getDocuments(), HttpStatus.OK);
+    }
+
     @GetMapping(value = "/documents/{docId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<?> getDocument(@PathVariable(name = "docId") Long docId) {
         try {

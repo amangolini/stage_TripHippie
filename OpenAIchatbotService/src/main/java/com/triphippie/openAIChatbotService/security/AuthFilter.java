@@ -13,9 +13,9 @@ import java.io.IOException;
 public class AuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(request.getHeader("auth-user-id") != null /*&& request.getHeader("auth-user-role") != null*/) {
+        if(request.getHeader("auth-user-id") != null && request.getHeader("auth-user-role") != null) {
             Authentication auth =
-                    new ChatbotServiceAuthentication(Integer.parseInt(request.getHeader("auth-user-id")), "USER" /*request.getHeader("auth-user-role")*/);
+                    new ChatbotServiceAuthentication(Integer.parseInt(request.getHeader("auth-user-id")), request.getHeader("auth-user-role"));
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 

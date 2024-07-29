@@ -2,6 +2,7 @@ package com.triphippie.openAIChatbotService.service;
 
 import com.triphippie.openAIChatbotService.model.Query;
 import com.triphippie.openAIChatbotService.model.RAGDocument;
+import com.triphippie.openAIChatbotService.model.RAGDocumentDto;
 import com.triphippie.openAIChatbotService.model.Result;
 import com.triphippie.openAIChatbotService.repository.RAGDocumentRepository;
 import com.triphippie.openAIChatbotService.security.PrincipalFacade;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,6 +104,16 @@ public class ChatbotService {
         ragDocument.setEmbeddings(ids);
 
         return ragDocumentRepository.save(ragDocument).getId();
+    }
+
+    public List<RAGDocumentDto> getDocuments() {
+        List<RAGDocument> documents = ragDocumentRepository.findByUserId(principalFacade.getPrincipal());
+
+        List<RAGDocumentDto> resources = new ArrayList<>();
+        for(RAGDocument doc : documents) {
+            resources.add(new RAGDocumentDto(doc.getId(), doc.getName()));
+        }
+        return resources;
     }
 
     public FileSystemResource getDocument(Long id) throws ChatbotServiceException {

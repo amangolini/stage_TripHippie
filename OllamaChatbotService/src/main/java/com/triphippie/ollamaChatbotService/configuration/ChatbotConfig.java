@@ -62,7 +62,8 @@ public class ChatbotConfig {
         return OllamaChatModel.builder()
                 .modelName(modelName)
                 .baseUrl(url)
-                .timeout(Duration.ofMinutes(15))
+                .timeout(Duration.ofMinutes(5))
+                .maxRetries(1)
                 .build();
     }
 

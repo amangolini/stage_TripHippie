@@ -2,6 +2,7 @@ package com.triphippie.ollamaChatbotService.service;
 
 import com.triphippie.ollamaChatbotService.model.Query;
 import com.triphippie.ollamaChatbotService.model.RAGDocument;
+import com.triphippie.ollamaChatbotService.model.RAGDocumentDto;
 import com.triphippie.ollamaChatbotService.model.Result;
 import com.triphippie.ollamaChatbotService.repository.RAGDocumentRepository;
 import com.triphippie.ollamaChatbotService.security.PrincipalFacade;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -112,6 +114,16 @@ public class ChatbotService {
         return ragDocumentRepository.save(ragDocument).getId();
     }
 
+    public List<RAGDocumentDto> getDocuments() {
+        List<RAGDocument> documents = ragDocumentRepository.findByUserId(principalFacade.getPrincipal());
+
+        List<RAGDocumentDto> resources = new ArrayList<>();
+        for(RAGDocument doc : documents) {
+            resources.add(new RAGDocumentDto(doc.getId(), doc.getName()));
+        }
+        return resources;
+    }
+
     public FileSystemResource getDocument(Long id) throws ChatbotServiceException {
         Optional<RAGDocument> document = ragDocumentRepository.findById(id);
         if(document.isEmpty()) throw new ChatbotServiceException(ChatbotServiceError.NOT_FOUND);
@@ -145,7 +157,7 @@ public class ChatbotService {
 
     public Optional<Result> spotDestination (MultipartFile picture) throws IOException {
         String response = visionLanguageModel.generate(
-                "Guess the tourist destination (city or at least country) where the given picture was taken. Answer with ONLY the name.",
+                "Guess the tourist destination (place, city or at least country) where the given picture was taken. Answer with ONLY the name.",
                 List.of(Base64.getEncoder().encodeToString(picture.getBytes()))
         );
 
